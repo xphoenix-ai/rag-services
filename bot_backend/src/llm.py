@@ -90,8 +90,8 @@ class CustomLLM(LLM):
         response = requests.post(url, json=json_body)
         response = response.json()
         
-        # return response["response"]
-        return self.__postprocess(response["response"])
+        return response["response"]
+        # return self.__postprocess(response["response"])
 
     def _call(
         self,

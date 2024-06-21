@@ -1,6 +1,7 @@
 import os
 import sys
 import pytz
+import json
 import uvicorn
 import nest_asyncio
 from pyngrok import ngrok
@@ -63,7 +64,12 @@ async def create_answer(item: Item) -> dict:
         user_ip_en = item.question
         
     print(f"En query: {user_ip_en}")
-    answer = graph_app.chat(user_ip_en, session_id=item.session_hash)['messages'][0]
+    answer = graph_app.chat(user_ip_en, session_id=item.session_hash)['messages'][-1]
+    
+    try:
+        answer = json.loads(answer)["answer"]
+    except Exception:
+        ...
     
     if item.tgt_lang == "si":
         si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
@@ -79,13 +85,14 @@ if __name__ == "__main__":
     host = os.getenv("APP_HOST")
     port = int(os.getenv("APP_PORT"))
     
+    if os.getenv("EXPOSE_TO_PUBLIC"):
+        if os.getenv("NGROK_TOKEN"):
+            ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
+        ngrok_tunnel = ngrok.connect(port)
+        print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
+        
     nest_asyncio.apply()
     uvicorn.run(app, host=host, port=port)
     print("[INFO] DB service started...")
     
-    # if os.getenv("EXPOSE_TO_PUBLIC"):
-    #     if os.getenv("NGROK_TOKEN"):
-    #         ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
-    #     ngrok_tunnel = ngrok.connect(port)
-    #     print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
     

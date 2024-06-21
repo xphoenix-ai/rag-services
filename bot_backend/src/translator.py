@@ -14,5 +14,5 @@ class Translator:
         }
         response = requests.post(self.url, json=json_body)
         response = response.json()
-        
+
         return response["tgt"]
