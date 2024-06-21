@@ -8,27 +8,90 @@ from langchain_core.outputs import GenerationChunk
 
 
 class CustomLLM(LLM):
-    def __init__(self, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1):
-        self.url = os.getenv("LLM_URL")
-        self.geration_config = {
-            "do_sample": do_sample,
-            "max_new_tokens": max_new_tokens,
-            "top_k": top_k,
-            "top_p": top_p,
-            "temperature": temperature,
-        }
+    url: str = os.getenv("LLM_URL")
+    # do_sample: Optional[bool] = True
+    # temperature: Optional[float] = 0.1
+    # top_p: Optional[float] = 0.95
+    # top_k: Optional[int] = 20
+    # max_new_tokens: Optional[int]   = 200
+    generation_config: dict = {
+        "do_sample": True,
+        "max_new_tokens": 200,
+        "top_k": 20,
+        "top_p": 0.95,
+        "temperature": 0.1
+    }
+    
+    # def __init__(self, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1):
+    # def __init__(self):
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
 
+        # self.url = url
+        # self.generation_config = {
+        #     "do_sample": do_sample,
+        #     "max_new_tokens": max_new_tokens,
+        #     "top_k": top_k,
+        #     "top_p": top_p,
+        #     "temperature": temperature,
+        # }
+        # self.generation_config = self._get_model_default_parameters
+        
+        # self.do_sample = do_sample
+        # self.max_new_tokens = max_new_tokens
+        # self.top_k = top_k
+        # self.top_p = top_p
+        # self.temperature = temperature
+        
+        # self.do_sample = True
+        # self.max_new_tokens = 200
+        # self.top_k = 20
+        # self.top_p = 0.95
+        # self.temperature = 0.1
+        
+        # self.generation_config = {
+        #     "do_sample": self.do_sample,
+        #     "max_new_tokens": self.max_new_tokens,
+        #     "top_k": self.top_k,
+        #     "top_p": self.top_p,
+        #     "temperature": self.temperature,
+        # }
+        
+    # @property
+    # def _get_model_default_parameters(self):
+    #     return {
+    #         "do_sample": self.do_sample,
+    #         "max_new_tokens": self.max_new_tokens,
+    #         "top_k": self.top_k,
+    #         "top_p": self.top_p,
+    #         "temperature": self.temperature,
+    #     }
+
+    def __postprocess(self, text):
+        return text.split("\n", 1)[0]
+        
     def __get_response(self, prompt: str, **kwargs: Any) -> str:
+        url = os.getenv("LLM_URL")
+        generation_config = {
+            "do_sample": True,
+            "max_new_tokens": 200,
+            "top_k": 20,
+            "top_p": 0.95,
+            "temperature": 0.1
+        }
         prompt_json = {
             "prompt": prompt
         }
-        json_body = {**prompt_json, **self.geration_config}
+        # json_body = {**prompt_json, **self.generation_config}
+        json_body = {**prompt_json, **generation_config}
         json_body.update(kwargs)
         
-        response = requests.post(self.url, json=json_body)
+        # response = requests.post(self.url, json=json_body)
+        response = requests.post(url, json=json_body)
         response = response.json()
         
-        return response["response"]
+        # return response["response"]
+        return self.__postprocess(response["response"])
 
     def _call(
         self,

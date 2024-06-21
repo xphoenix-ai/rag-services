@@ -35,6 +35,7 @@ class GraphApp:
     {context}"""
     
     def __init__(self):
+        # self.llm = CustomLLM(os.getenv("LLM_URL"))
         self.llm = CustomLLM()
         
         vector_db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"), os.getenv("EMBED_MODEL_PATH"))
@@ -62,6 +63,9 @@ class GraphApp:
         self.chat_history = {}    
 
     def chat(self, en_query, session_id) -> dict:
+        if session_id not in self.chat_history:
+            self.chat_history[session_id] = []
+            
         result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
         print(f">>> result: {result}")
         full_answer = result['answer']
@@ -71,3 +75,7 @@ class GraphApp:
         print("chat do_rag: ", self.chat_history[session_id])
 
         return {"messages": [answer]}
+    
+    def clear_history(self, session_id):
+        if session_id in self.chat_history:
+            self.chat_history[session_id] = []

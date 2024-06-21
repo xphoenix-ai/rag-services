@@ -92,13 +92,19 @@ class VectorDB:
         source_documents = self.get_source_documents(data_source)
         document_chunks = self.chunk_documents(source_documents)
 
-        vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
-        
+        if not os.path.exists(db_name):
+            vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
+        else:
+            vector_store = self.read_db(db_name)
+            
         return vector_store
     
     def build_db_from_document_chunks(self, document_chunks, db_path):
-        print("[INFO] Creating a new db...")
-        vector_store = Chroma.from_documents(document_chunks, self.embeddings, persist_directory=db_path)
+        if document_chunks:
+            print("[INFO] Creating a new db...")
+            vector_store = Chroma.from_documents(document_chunks, self.embeddings, persist_directory=db_path)
+        else:
+            print("[INFO] No documents found to build the db...")
         
         return vector_store
     
@@ -113,8 +119,11 @@ class VectorDB:
         document_chunks = self.chunk_documents(source_documents)
         
         if os.path.exists(db_name):
-            print("[INFO] Adding new documents to db...")
-            vector_store.add_documents(document_chunks)
+            if document_chunks:
+                print("[INFO] Adding new documents to db...")
+                vector_store.add_documents(document_chunks)
+            else:
+                print("[INFO] No documents found to add to db...")
         else:
             vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
         

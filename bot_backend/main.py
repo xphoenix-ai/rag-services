@@ -52,24 +52,40 @@ def create_db() -> JSONResponse:
 @app.post("/answer")
 async def create_answer(item: Item) -> dict:
     print("session_hash========", item.session_hash)
-    user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
-    print(user_ip_en)
-    answer = graph_app.chat(user_ip_en)['messages'][0]
-    si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
+    print("src_lang========", item.src_lang)
+    print("tgt_lang========", item.tgt_lang)
+    if item.src_lang == "sing":
+        user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
+    elif item.src_lang == "si":
+        user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en")
+    # elif item.src_lang == "en":
+    else:
+        user_ip_en = item.question
+        
+    print(f"En query: {user_ip_en}")
+    answer = graph_app.chat(user_ip_en, session_id=item.session_hash)['messages'][0]
+    
+    if item.tgt_lang == "si":
+        si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
+    elif item.tgt_lang == "sing":
+        si_answer = translator.translate(answer, src_lang="en", tgt_lang="sing")
+    # elif item.tgt_lang == "en":
+    else:
+        si_answer = answer
     
     return {"answer": answer, "si_answer": si_answer}
 
 if __name__ == "__main__":
-    host = os.getenv("DB_HOST")
-    port = os.getenv("DB_PORT")
+    host = os.getenv("APP_HOST")
+    port = int(os.getenv("APP_PORT"))
     
     nest_asyncio.apply()
     uvicorn.run(app, host=host, port=port)
     print("[INFO] DB service started...")
     
-    if os.getenv("EXPOSE_TO_PUBLIC"):
-        if os.getenv("NGROK_TOKEN"):
-            ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
-        ngrok_tunnel = ngrok.connect(port)
-        print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
+    # if os.getenv("EXPOSE_TO_PUBLIC"):
+    #     if os.getenv("NGROK_TOKEN"):
+    #         ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
+    #     ngrok_tunnel = ngrok.connect(port)
+    #     print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
     
