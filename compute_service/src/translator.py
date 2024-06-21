@@ -21,7 +21,8 @@ class Translator:
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_si = TextStreamer(self.tr_tokenizer_si, skip_prompt=True, skip_special_tokens=True)
-
+        print("[INFO] Translation service started...")
+        
     def __translate(self, model, tokenizer, query, tgt_lang_code, streamer=None):
         inputs = tokenizer(query, return_tensors="pt").to(model.device)
         in_len = inputs.input_ids.shape[-1]

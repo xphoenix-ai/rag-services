@@ -21,6 +21,7 @@ class LLM:
         )
         self.device = self.model.device
         self.tokenize_with_chat_template = tokenize_with_chat_template
+        print("[INFO] LLM service started...")
                 
     def generate(self, prompt, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1):
         torch.cuda.empty_cache()
