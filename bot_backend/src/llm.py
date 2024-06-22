@@ -77,7 +77,8 @@ class CustomLLM(LLM):
             "max_new_tokens": 200,
             "top_k": 20,
             "top_p": 0.95,
-            "temperature": 0.1
+            "temperature": 0.1,
+            "repetition_penalty": 1.0
         }
         prompt_json = {
             "prompt": prompt

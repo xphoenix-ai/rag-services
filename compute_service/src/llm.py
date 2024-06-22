@@ -23,7 +23,7 @@ class LLM:
         self.tokenize_with_chat_template = tokenize_with_chat_template
         print("[INFO] LLM service started...")
                 
-    def generate(self, prompt, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1):
+    def generate(self, prompt, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1, repetition_penalty=1.0):
         torch.cuda.empty_cache()
         if self.tokenize_with_chat_template:
             messages = [
@@ -42,6 +42,7 @@ class LLM:
             top_k=top_k,
             top_p=top_p,
             pad_token_id=self.tokenizer.eos_token_id,   # To prevent warning
+            repetition_penalty=repetition_penalty,
         )
 
         prompt_tokens = len(inputs['input_ids'][0])
