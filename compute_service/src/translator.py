@@ -34,7 +34,7 @@ class Translator:
 
         translated_tokens = model.generate(
             **inputs, forced_bos_token_id=tokenizer.lang_code_to_id[tgt_lang_code], max_length=2 * in_len, streamer=streamer, pad_token_id=tokenizer.eos_token_id,
-            do_sample=True, temperature=0.1, top_p=0.95, top_k=5
+            do_sample=True, temperature=0.1, top_p=0.95, top_k=20, repetition_penalty=1.0
         )
         torch.cuda.empty_cache()
         
