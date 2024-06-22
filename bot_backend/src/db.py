@@ -15,7 +15,7 @@ class VectorDB:
         self.data_path = data_path
         self.chroma_db_path = chroma_db_path
         self.embeddings = DocEmbeddings()
-        self.r_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        self.r_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
         self.bs4_strainer = bs4.SoupStrainer() #class_=bs_classes)
         self.re_multiline = re.compile('\n+')
         
