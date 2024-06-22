@@ -21,8 +21,8 @@ class Translator:
             load_in_4bit=load_in_4bit,
             load_in_8bit=load_in_8bit
         )
-        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, token=os.getenv("HF_TOKEN")).to(device)
-        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, use_auth_token=True, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config).to(device)
+        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, use_auth_token=True, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto")
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_si = TextStreamer(self.tr_tokenizer_si, skip_prompt=True, skip_special_tokens=True)
