@@ -4,6 +4,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoConfig, BitsA
 
 from utils.unicode_converter import sinhala_to_singlish
 
+
 class Translator:
     LANG_MAP = {
         "en": "eng_Latn",
@@ -11,13 +12,17 @@ class Translator:
         "sing": "eng_Latn"
     }
 
-    def __init__(self, translator_path, translitarator_path):
+    def __init__(self, translator_path, translitarator_path, load_in_4bit=False, load_in_8bit=False):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tr_tokenizer_si = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="sin_Sinh")
         self.tr_tokenizer_en = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="eng_Latn")
 
-        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, token=os.getenv("HF_TOKEN")).to(device)
-        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, use_auth_token=True, low_cpu_mem_usage=True, torch_dtype=torch.float16).to(device)
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=load_in_4bit,
+            load_in_8bit=load_in_8bit
+        )
+        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, token=os.getenv("HF_TOKEN")).to(device)
+        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, use_auth_token=True, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config).to(device)
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_si = TextStreamer(self.tr_tokenizer_si, skip_prompt=True, skip_special_tokens=True)
@@ -66,11 +71,9 @@ class Translator:
     def singlish_to_english(self, sing_query):
         """sing --> en"""
         # sing --> si
-        # si_response = self.translate(self.tr_model_singlish, self.tr_tokenizer_en, sing_query, "sin_Sinh", streamer=None)
         si_response = self.singlish_to_sinhala(sing_query)
         
         # si --> en
-        # en_response = self.__translate(self.tr_model, self.tr_tokenizer_si, si_response, "eng_Latn", streamer=None)
         en_response = self.sinhala_to_english(si_response)
         
         return en_response
