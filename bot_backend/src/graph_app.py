@@ -80,7 +80,6 @@ class GraphApp:
     """
     
     def __init__(self):
-        # self.llm = CustomLLM(os.getenv("LLM_URL"))
         self.llm = CustomLLM()
         
         vector_db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"), os.getenv("EMBED_MODEL_PATH"))
@@ -109,26 +108,24 @@ class GraphApp:
         
         self.chat_history = {}   
         
-        self.app = self.get_langgraph() 
+        self.app = self.__get_langgraph() 
 
-    # def chat(self, en_query, session_id) -> dict:
-    def do_rag(self, state: AgentState) -> dict:
+    def __do_rag(self, state: AgentState) -> dict:
         session_id = state["session_id"]
         en_query = state["messages"][-2]
         if session_id not in self.chat_history:
             self.chat_history[session_id] = []
             
         result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
-        print(f">>> result: {result}")
+        print(f">>> RAG result: {result}")
         full_answer = result['answer']
         answer = full_answer.rsplit("### Response", 1)[-1].strip()
 
         self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
-        print("chat do_rag: ", self.chat_history[session_id])
 
         return {"messages": [answer], "session_id": state["session_id"]}
     
-    def classifier(self, state: AgentState) -> dict:
+    def __classifier(self, state: AgentState) -> dict:
         question = state["messages"][-1]
         prompt = Template(self.classifier_prompt)
         prompt = prompt.substitute({"question": question})
@@ -151,7 +148,7 @@ class GraphApp:
                 
         return {"messages": [response], "session_id": state["session_id"]}
     
-    def where_to_go(self, state: AgentState) -> str:
+    def __where_to_go(self, state: AgentState) -> str:
         classifier_response = json.loads(state["messages"][-1])
 
         if classifier_response["category"] == "do_answer":
@@ -159,14 +156,14 @@ class GraphApp:
         else:
             return "rag"
     
-    def get_langgraph(self):
+    def __get_langgraph(self):
         workflow = StateGraph(AgentState)
 
-        workflow.add_node("agent1", self.classifier)
-        workflow.add_node("agent2", self.do_rag)
+        workflow.add_node("agent1", self.__classifier)
+        workflow.add_node("agent2", self.__do_rag)
 
         workflow.add_conditional_edges(
-            "agent1", self.where_to_go, {"answer": END, "rag": "agent2"}
+            "agent1", self.__where_to_go, {"answer": END, "rag": "agent2"}
         )
         workflow.add_edge("agent2", END)
 
@@ -179,7 +176,7 @@ class GraphApp:
     def chat(self, en_query, session_id):
         inputs = {"messages": [en_query], "session_id": session_id}
         answer = self.app.invoke(inputs)
-        print(f"Answer: {answer} =====")
+        print(f"Answer list: {answer} =====")
         
         return {"messages": answer["messages"]}
     

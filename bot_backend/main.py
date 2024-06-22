@@ -59,7 +59,6 @@ async def create_answer(item: Item) -> dict:
         user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
     elif item.src_lang == "si":
         user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en")
-    # elif item.src_lang == "en":
     else:
         user_ip_en = item.question
         
@@ -75,9 +74,11 @@ async def create_answer(item: Item) -> dict:
         si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
     elif item.tgt_lang == "sing":
         si_answer = translator.translate(answer, src_lang="en", tgt_lang="sing")
-    # elif item.tgt_lang == "en":
     else:
         si_answer = answer
+    
+    print(f"En answer: {answer}")
+    print(f"Tgt lang answer: {si_answer}")
     
     return {"answer": answer, "si_answer": si_answer}
 
@@ -94,5 +95,3 @@ if __name__ == "__main__":
     nest_asyncio.apply()
     uvicorn.run(app, host=host, port=port)
     print("[INFO] DB service started...")
-    
-    

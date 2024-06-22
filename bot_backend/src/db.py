@@ -24,26 +24,27 @@ class VectorDB:
     def is_url(url):
         return urlparse.urlparse(url).scheme in ('http', 'https',)
         
-    def post_process_documents(self, docs: list):
+    def __post_process_documents(self, docs: list):
         new_docs = []
         
         for doc in docs:
             page_content = doc.page_content.strip()
             page_content = self.re_multiline.sub('\n', page_content)
+            
             if page_content:
                 doc.page_content = page_content
                 new_docs.append(doc)
         
         return new_docs
     
-    def pdf_processor(self, filepath):
+    def __pdf_processor(self, filepath):
         print(f"[INFO] Processing {filepath}...")
         loader = PyPDFLoader(filepath)
         docs = loader.load()
         
         return docs
     
-    def url_processor(self, url):
+    def __url_processor(self, url):
         print(f"[INFO] Processing {url}...")
         loader = WebBaseLoader(
             web_paths=[url],
@@ -53,13 +54,13 @@ class VectorDB:
         
         return docs
     
-    def chunk_documents(self, data_sources):
+    def __chunk_documents(self, data_sources):
         documents = []
         for file in data_sources:
             if self.is_url(file):
-                docs = self.url_processor(file)
+                docs = self.__url_processor(file)
             elif file.endswith('.pdf'):
-                docs = self.pdf_processor(file)
+                docs = self.__pdf_processor(file)
             else:
                 print(f"[WARNING] Skipping unsupported source document: {file}")
                 continue
@@ -67,11 +68,11 @@ class VectorDB:
             documents.extend(docs)
 
         document_chunks = self.r_splitter.split_documents(documents)
-        document_chunks = self.post_process_documents(document_chunks)
+        document_chunks = self.__post_process_documents(document_chunks)
         
         return document_chunks
         
-    def get_source_documents(self, data_source):
+    def __get_source_documents(self, data_source):
         if isinstance(data_source, list):
             return data_source
         elif os.path.isdir(data_source):
@@ -89,10 +90,9 @@ class VectorDB:
         if db_name is None:
             db_name = self.chroma_db_path
             
-        source_documents = self.get_source_documents(data_source)
-        document_chunks = self.chunk_documents(source_documents)
-
         if not os.path.exists(db_name):
+            source_documents = self.__get_source_documents(data_source)
+            document_chunks = self.__chunk_documents(source_documents)
             vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
         else:
             vector_store = self.read_db(db_name)
@@ -115,8 +115,8 @@ class VectorDB:
         if os.path.exists(db_name):
             vector_store = self.read_db(db_name)
         
-        source_documents = self.get_source_documents(data_source)
-        document_chunks = self.chunk_documents(source_documents)
+        source_documents = self.__get_source_documents(data_source)
+        document_chunks = self.__chunk_documents(source_documents)
         
         if os.path.exists(db_name):
             if document_chunks:
@@ -128,7 +128,6 @@ class VectorDB:
             vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
         
         return vector_store
-        
     
     def read_db(self, db_path):
         print("[INFO] Reading the db...")
