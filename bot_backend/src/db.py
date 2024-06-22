@@ -9,6 +9,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 
 from src.encoder import DocEmbeddings
 
+
 class VectorDB:
     def __init__(self, data_path, chroma_db_path, embed_model_path):
         self.data_path = data_path

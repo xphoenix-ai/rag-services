@@ -164,5 +164,3 @@ if __name__ == "__main__":
     nest_asyncio.apply()
     uvicorn.run(app, host=host, port=port)
     print("[INFO] Translator service started...")
-    
-    
