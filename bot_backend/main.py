@@ -38,6 +38,7 @@ class Item(BaseModel):
     session_hash: str
     src_lang: Optional[str]
     tgt_lang: Optional[str]
+    context_only: Optional[bool]
 
 
 @app.get("/")
@@ -63,7 +64,7 @@ async def create_answer(item: Item) -> dict:
         user_ip_en = item.question
         
     print(f"En query: {user_ip_en}")
-    answer = graph_app.chat(user_ip_en, session_id=item.session_hash)['messages'][-1]
+    answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only)['messages'][-1]
     
     try:
         answer = json.loads(answer)["answer"]

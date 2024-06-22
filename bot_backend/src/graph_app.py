@@ -33,12 +33,21 @@ class GraphApp:
     which can be understood without the chat history. Do NOT answer the question, \
     just reformulate it if needed and otherwise return it as is."""
 
-    qa_system_prompt = """You are an assistant for question-answering tasks. \
-    Use the following pieces of retrieved context to answer the question. \
-    If you don't know the answer, just say that you don't know. \
-    Keep the answer in ONE sentence. DON'T give notes (Note:) within brackets.\
-    DO NOT build sample dialogues like \nUser: bla bla. \nAI: bla bla bla
+    # qa_system_prompt = """You are an assistant for question-answering tasks. \
+    # Use the following pieces of retrieved context to answer the question. \
+    # If you don't know the answer, just say that you don't know. \
+    # Keep the answer in ONE sentence. DON'T give notes (Note:) within brackets.\
+    # DO NOT build sample dialogues like \nUser: bla bla. \nAI: bla bla bla
 
+    # {context}"""
+    
+    qa_system_prompt = """You are a helpful assistant for question-answering tasks. \
+    Use the following context to answer the question. \
+    Give the answer in a CONVERSATIONAL way.\n
+    If you don't know the answer, just say that you don't know. \
+    Keep the answer as concise as possible. \
+    DO NOT try to explain anything. \
+    Context:\n
     {context}"""
     
     classifier_prompt = """You are given a question: "${question}". Your task is to 
@@ -110,6 +119,19 @@ class GraphApp:
         
         self.app = self.__get_langgraph() 
 
+    def __do_rag_standalone(self, en_query, session_id) -> dict:
+        if session_id not in self.chat_history:
+            self.chat_history[session_id] = []
+            
+        result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
+        print(f">>> RAG result: {result}")
+        full_answer = result['answer']
+        answer = full_answer.rsplit("### Response", 1)[-1].strip()
+
+        self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        
+        return {"messages": [answer], "session_id": session_id}
+        
     def __do_rag(self, state: AgentState) -> dict:
         session_id = state["session_id"]
         en_query = state["messages"][-2]
@@ -173,9 +195,12 @@ class GraphApp:
 
         return app
     
-    def chat(self, en_query, session_id):
-        inputs = {"messages": [en_query], "session_id": session_id}
-        answer = self.app.invoke(inputs)
+    def chat(self, en_query, session_id, context_only=False):
+        if context_only:
+            answer = self.__do_rag_standalone(en_query, session_id)
+        else:
+            inputs = {"messages": [en_query], "session_id": session_id}
+            answer = self.app.invoke(inputs)
         print(f"Answer list: {answer} =====")
         
         return {"messages": answer["messages"]}
