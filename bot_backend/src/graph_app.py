@@ -88,7 +88,8 @@ class GraphApp:
 
     """
     
-    def __init__(self):
+    def __init__(self, max_history=None):
+        self.max_history = max_history
         self.llm = CustomLLM()
         
         vector_db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"), os.getenv("EMBED_MODEL_PATH"))
@@ -117,12 +118,17 @@ class GraphApp:
         
         self.chat_history = {}   
         
-        self.app = self.__get_langgraph() 
+        self.app = self.__get_langgraph()
+    
+    def __truncate_chat_history(self, session_id):
+        if self.max_history is not None:
+            self.chat_history[session_id] = self.chat_history[session_id][-self.max_history:]
 
     def __do_rag_standalone(self, en_query, session_id) -> dict:
         if session_id not in self.chat_history:
             self.chat_history[session_id] = []
-            
+        
+        self.__truncate_chat_history(session_id)
         result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
         print(f">>> RAG result: {result}")
         full_answer = result['answer']
@@ -137,7 +143,8 @@ class GraphApp:
         en_query = state["messages"][-2]
         if session_id not in self.chat_history:
             self.chat_history[session_id] = []
-            
+        
+        self.__truncate_chat_history(session_id)
         result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
         print(f">>> RAG result: {result}")
         full_answer = result['answer']
@@ -195,7 +202,10 @@ class GraphApp:
 
         return app
     
-    def chat(self, en_query, session_id, context_only=False):
+    def chat(self, en_query, session_id, context_only=False, max_history=None):
+        if max_history is not None:
+            self.max_history = max_history
+            
         if context_only:
             answer = self.__do_rag_standalone(en_query, session_id)
         else:

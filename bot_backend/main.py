@@ -39,6 +39,7 @@ class Item(BaseModel):
     src_lang: Optional[str]
     tgt_lang: Optional[str]
     context_only: Optional[bool]
+    max_history: Optional[int]
 
 
 @app.get("/")
@@ -53,9 +54,11 @@ def create_db() -> JSONResponse:
 
 @app.post("/answer")
 async def create_answer(item: Item) -> dict:
-    print("session_hash========", item.session_hash)
-    print("src_lang========", item.src_lang)
-    print("tgt_lang========", item.tgt_lang)
+    print("session_hash ========> ", item.session_hash)
+    print("src_lang ========> ", item.src_lang)
+    print("tgt_lang ========> ", item.tgt_lang)
+    print("max_history ========> ", item.max_history)
+    
     if item.src_lang == "sing":
         user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
     elif item.src_lang == "si":
@@ -64,7 +67,7 @@ async def create_answer(item: Item) -> dict:
         user_ip_en = item.question
         
     print(f"En query: {user_ip_en}")
-    answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only)['messages'][-1]
+    answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history)['messages'][-1]
     
     try:
         answer = json.loads(answer)["answer"]
