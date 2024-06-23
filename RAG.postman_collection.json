@@ -1,0 +1,419 @@
+{
+	"info": {
+		"_postman_id": "7da33724-3233-4870-ba03-77559229cf81",
+		"name": "RAG",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11607208"
+	},
+	"item": [
+		{
+			"name": "Translate-Sing-Si",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"Oyata kohomada yaluwe?\",\r\n    \"src_lang\": \"sing\",\r\n    \"tgt_lang\": \"si\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate-Sing-En",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"Oyata kohomada yaluwe?\",\r\n    \"src_lang\": \"sing\",\r\n    \"tgt_lang\": \"en\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate-Si-En",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"ඔයාට කොහොමද යාලුවේ?\",\r\n    \"src_lang\": \"si\",\r\n    \"tgt_lang\": \"en\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate-Si-Sing",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"ඔයාට කොහොමද යාලුවේ?\",\r\n    \"src_lang\": \"si\",\r\n    \"tgt_lang\": \"sing\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate-En-Sing",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"How are you, buddy?\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"sing\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate-En-Si",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"src\": \"According to the Commercial Bank of Ceylon PLC's Annual Report 2023, the bank issued 68,687,375 ordinary shares as part of the final dividend satisfied in the form of issue and allotment of new shares\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"si\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sentence Encoder",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sentences\": [\"How are you, buddy?\", \"okay my dear\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/encode",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"encode"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LLM",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prompt\": \"Who is the first president of Sri Lanka? Give only the name\",\r\n    \"do_sample\": true,\r\n    \"max_new_tokens\": 100,\r\n    \"top_k\": 5,\r\n    \"top_p\": 0.95,\r\n    \"temperature\": 0.1,\r\n    \"repetition_penalty\": 1.0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://262e-34-23-151-96.ngrok-free.app/generate",
+					"protocol": "https",
+					"host": [
+						"262e-34-23-151-96",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Chat",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"question\": \"Oya nam harima cute\",\r\n    \"session_hash\": \"123\",\r\n    \"src_lang\": \"sing\",\r\n    \"tgt_lang\": \"si\",\r\n    \"context_only\": true,\r\n    \"max_history\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://0.0.0.0:8002/answer",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8002",
+					"path": [
+						"answer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Query DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\": \"Who built Kala wewa?\",\r\n    \"db_name\": \"test_db\",\r\n    \"k\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8002/query_db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"query_db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"db_name\": \"test_db\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8002/create_db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"create_db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clear DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"db_name\": \"test_db\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8002/clear_db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"clear_db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DB Update with URL",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"url\": \"https://www.combank.lk/personal-banking/term-deposits/fixed-deposits\",\r\n    \"db_name\": \"test_db\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8002/update_url",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"update_url"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DB Update with File",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ASUS/Downloads/1BitLLM.pdf"
+						},
+						{
+							"key": "db_name",
+							"value": "test_db",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8002/update_file",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"update_file"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
