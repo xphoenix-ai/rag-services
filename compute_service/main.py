@@ -1,6 +1,7 @@
 import os
 import sys
 import pytz
+import time
 import uvicorn
 import nest_asyncio
 from pyngrok import ngrok
@@ -46,6 +47,7 @@ class TrOutput(BaseModel):
     src_lang: str
     tgt_lang: str
     modified_time: Optional[datetime]
+    time_taken: Optional[float]
     error: Optional[str]
     
     
@@ -57,6 +59,7 @@ class EmbdOutput(BaseModel):
     sentences: list[str]
     embeddings: Optional[list[list[float]]]
     modified_time: Optional[datetime]
+    time_taken: Optional[float]
     error: Optional[str]
     
 
@@ -72,6 +75,7 @@ class LLMOutput(BaseModel):
     prompt: str
     response: str
     modified_time: Optional[datetime]
+    time_taken: Optional[float]
     error: Optional[str]
 
 
@@ -81,6 +85,8 @@ async def read_root() -> JSONResponse:
 
 @app.post("/translate")
 async def create_answer(tr_item: TrIntput) -> JSONResponse:
+    t_start = time.time()
+    
     src_lang = tr_item.src_lang
     tgt_lang = tr_item.tgt_lang
     src = tr_item.src
@@ -105,12 +111,14 @@ async def create_answer(tr_item: TrIntput) -> JSONResponse:
         error = f"Not supported language pair: {src_lang} and {tgt_lang}"
         # raise ValueError(f"Not supported language pair: {src_lang} and {tgt_lang}")
     
+    t_end = time.time()
     res_obj = TrOutput(
         src = src,
         tgt = res,
         src_lang = src_lang,
         tgt_lang = tgt_lang,
         modified_time = datetime.now(pytz.UTC),
+        time_taken = (t_end - t_start),
         error = error
     )
     json_obj = jsonable_encoder(res_obj)
@@ -119,14 +127,18 @@ async def create_answer(tr_item: TrIntput) -> JSONResponse:
 
 @app.post("/encode")
 async def encode(embed_item: EmbdIntput) -> JSONResponse:
+    t_start = time.time()
+    
     sentences = embed_item.sentences
     embeddings = encoder.encode(sentences)
     error = ""
     
+    t_end = time.time()
     res_obj = EmbdOutput(
         sentences = sentences,
         embeddings = embeddings,
         modified_time = datetime.now(pytz.UTC),
+        time_taken = (t_end - t_start),
         error = error
     )
     json_obj = jsonable_encoder(res_obj)
@@ -135,15 +147,19 @@ async def encode(embed_item: EmbdIntput) -> JSONResponse:
 
 @app.post("/generate")
 async def generate(llm_input: LLMInput) -> JSONResponse:
+    t_start = time.time()
+    
     prompt = llm_input.prompt
     generation_config = llm_input.model_dump(exclude=["prompt"])
     response = llm.generate(prompt, **generation_config)
     error = ""
     
+    t_end = time.time()
     res_obj = LLMOutput(
         prompt = prompt,
         response = response,
         modified_time = datetime.now(pytz.UTC),
+        time_taken = (t_end - t_start),
         error = error
     )
     json_obj = jsonable_encoder(res_obj)
