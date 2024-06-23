@@ -4,8 +4,7 @@ import bs4
 import urllib.parse as urlparse
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader
 
 from src.encoder import DocEmbeddings
 
@@ -38,6 +37,13 @@ class VectorDB:
         
         return new_docs
     
+    def __txt_processor(self, filepath):
+        print(f"[INFO] Processing {filepath}...")
+        loader = TextLoader(filepath)
+        docs = loader.load()
+        
+        return docs
+    
     def __pdf_processor(self, filepath):
         print(f"[INFO] Processing {filepath}...")
         loader = PyPDFLoader(filepath)
@@ -62,6 +68,8 @@ class VectorDB:
                 docs = self.__url_processor(file)
             elif file.endswith('.pdf'):
                 docs = self.__pdf_processor(file)
+            elif file.endswith('.txt'):
+                docs = self.__txt_processor(file)
             else:
                 print(f"[WARNING] Skipping unsupported source document: {file}")
                 continue
@@ -94,15 +102,15 @@ class VectorDB:
         if not os.path.exists(db_name):
             source_documents = self.__get_source_documents(data_source)
             document_chunks = self.__chunk_documents(source_documents)
-            vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
+            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_name)
         else:
             vector_store = self.read_db(db_name)
             
         return vector_store
     
-    def build_db_from_document_chunks(self, document_chunks, db_path):
+    def __build_db_from_document_chunks(self, document_chunks, db_path):
         if document_chunks:
-            print("[INFO] Creating a new db...")
+            print(f"[INFO] Creating a new db at {db_path}...")
             vector_store = Chroma.from_documents(document_chunks, self.embeddings, persist_directory=db_path)
         else:
             print("[INFO] No documents found to build the db...")
@@ -126,12 +134,12 @@ class VectorDB:
             else:
                 print("[INFO] No documents found to add to db...")
         else:
-            vector_store = self.build_db_from_document_chunks(document_chunks, db_path=db_name)
+            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_name)
         
         return vector_store
     
     def read_db(self, db_path):
-        print("[INFO] Reading the db...")
+        print(f"[INFO] Reading the db from {db_path}...")
         vector_store = Chroma(persist_directory=db_path, embedding_function=self.embeddings)
         
         return vector_store
@@ -147,9 +155,21 @@ class VectorDB:
             
         return vector_store.as_retriever()
     
-    def clear_db(self, db_name):
+    def query_db(self, query, db_name=None, k=4):
         if db_name is None:
             db_name = self.chroma_db_path
+        
+        db = self.read_db(db_name)
+        docs = db.similarity_search(query, k=k)
+
+        content = [doc.page_content for doc in docs]
+        
+        return content
+    
+    def clear_db(self, db_name):
+        if db_name is None:
+            print("[INFO] Specify the DB name to be cleared !")
+            return False
             
         if os.path.exists(db_name):
             vector_store = self.read_db(db_name)

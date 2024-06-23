@@ -2,17 +2,18 @@ import os
 import sys
 import pytz
 import json
+import base64
 import uvicorn
 import nest_asyncio
 from pyngrok import ngrok
-from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Union, Optional
-from dotenv import load_dotenv, dotenv_values
 from fastapi.responses import JSONResponse
+from dotenv import load_dotenv, dotenv_values
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile, Body
 
 from src.db import VectorDB
 from src.graph_app import GraphApp
@@ -46,9 +47,43 @@ class Item(BaseModel):
 async def read_root() -> JSONResponse:
     return JSONResponse({"info": "DB Service", "version": os.getenv("DB_VERSION"), "vendor": "XXX"})
 
-@app.post("/create")
-def create_db() -> JSONResponse:
-    db.create_db()
+@app.post("/create_db")
+def create_db(db_name: str=Body(embed=True, default=None)) -> JSONResponse:
+    print(f"db_name: {db_name} ===")
+    db.create_db(db_name=db_name)
+    
+    return JSONResponse({"success": True})
+
+@app.post("/update_file")
+def update_db_from_file(file: UploadFile = File(...), db_name: str=Body(embed=True, default=None)) -> JSONResponse:
+    os.makedirs(os.getenv("DB_DATA_PATH_UPLOAD"), exist_ok=True)
+    content = file.file.read()
+    file_path = os.path.join(os.getenv("DB_DATA_PATH_UPLOAD"), file.filename)
+    
+    with open(file_path, 'wb') as f:
+            decoded_content = base64.b64decode(content)
+            f.write(decoded_content)
+            
+    db.add_to_db(data_source=[file_path], db_name=db_name)
+ 
+    return JSONResponse({"success": True})
+
+@app.post("/update_url")
+def update_db_from_url(url: str=Body(embed=True), db_name: str=Body(embed=True, default=None)) -> JSONResponse:        
+    db.add_to_db(data_source=[url], db_name=db_name)
+ 
+    return JSONResponse({"success": True})
+
+@app.post("/query_db")
+async def query_db(query: str=Body(embed=True), db_name: str=Body(embed=True, default=None), k: int=Body(embed=True, default=4)) -> JSONResponse:
+    content = db.query_db(query, db_name=db_name, k=k)
+    
+    return JSONResponse({"query": query, "content": content})
+
+@app.post("/clear_db")
+def clear_db(db_name: str=Body(embed=True, default=None)) -> JSONResponse:
+    print(f"db_name: {db_name} ===")
+    db.clear_db(db_name)
     
     return JSONResponse({"success": True})
 
