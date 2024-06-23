@@ -10,7 +10,7 @@ from src.encoder import DocEmbeddings
 
 
 class VectorDB:
-    def __init__(self, data_path, chroma_db_path, embed_model_path):
+    def __init__(self, data_path, chroma_db_path):
         self.data_path = data_path
         self.chroma_db_path = chroma_db_path
         self.embeddings = DocEmbeddings()
@@ -92,19 +92,19 @@ class VectorDB:
                 source_documents = [x.strip() for x in f.readlines()]
             return source_documents
     
-    def create_db(self, db_name=None, data_source=None):
+    def create_db(self, db_path=None, data_source=None):
         if data_source is None:
             data_source = self.data_path
             
-        if db_name is None:
-            db_name = self.chroma_db_path
+        if db_path is None:
+            db_path = self.chroma_db_path
             
-        if not os.path.exists(db_name):
+        if not os.path.exists(db_path):
             source_documents = self.__get_source_documents(data_source)
             document_chunks = self.__chunk_documents(source_documents)
-            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_name)
+            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_path)
         else:
-            vector_store = self.read_db(db_name)
+            vector_store = self.read_db(db_path)
             
         return vector_store
     
@@ -117,24 +117,24 @@ class VectorDB:
         
         return vector_store
     
-    def add_to_db(self, data_source, db_name=None):
-        if db_name is None:
-            db_name = self.chroma_db_path
+    def add_to_db(self, data_source, db_path=None):
+        if db_path is None:
+            db_path = self.chroma_db_path
             
-        if os.path.exists(db_name):
-            vector_store = self.read_db(db_name)
+        if os.path.exists(db_path):
+            vector_store = self.read_db(db_path)
         
         source_documents = self.__get_source_documents(data_source)
         document_chunks = self.__chunk_documents(source_documents)
         
-        if os.path.exists(db_name):
+        if os.path.exists(db_path):
             if document_chunks:
                 print("[INFO] Adding new documents to db...")
                 vector_store.add_documents(document_chunks)
             else:
                 print("[INFO] No documents found to add to db...")
         else:
-            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_name)
+            vector_store = self.__build_db_from_document_chunks(document_chunks, db_path=db_path)
         
         return vector_store
     
@@ -144,35 +144,35 @@ class VectorDB:
         
         return vector_store
 
-    def get_retriever(self, db_name=None):
-        if db_name is None:
-            db_name = self.chroma_db_path
-            
-        if not os.path.exists(db_name):
-            vector_store = self.create_db(db_name)
+    def get_retriever(self, db_path=None):
+        if db_path is None:
+            db_path = self.chroma_db_path
+                        
+        if not os.path.exists(db_path):
+            vector_store = self.create_db(db_path)
         else:
-            vector_store = self.read_db(db_name)
+            vector_store = self.read_db(db_path)
             
         return vector_store.as_retriever()
     
-    def query_db(self, query, db_name=None, k=4):
-        if db_name is None:
-            db_name = self.chroma_db_path
-        
-        db = self.read_db(db_name)
+    def query_db(self, query, db_path=None, k=4):
+        if db_path is None:
+            db_path = self.chroma_db_path
+                    
+        db = self.read_db(db_path)
         docs = db.similarity_search(query, k=k)
 
         content = [doc.page_content for doc in docs]
         
         return content
     
-    def clear_db(self, db_name):
-        if db_name is None:
+    def clear_db(self, db_path):
+        if db_path is None:
             print("[INFO] Specify the DB name to be cleared !")
             return False
             
-        if os.path.exists(db_name):
-            vector_store = self.read_db(db_name)
+        if os.path.exists(db_path):
+            vector_store = self.read_db(db_path)
             print("[INFO] Clearining the db...")
             vector_store.delete_collection()
             

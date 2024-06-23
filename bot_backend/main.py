@@ -22,7 +22,7 @@ from src.translator import Translator
 load_dotenv()
 
 app = FastAPI()
-db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"), os.getenv("EMBED_MODEL_PATH"))
+db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"))
 graph_app = GraphApp()
 translator = Translator()
 
@@ -39,8 +39,9 @@ class Item(BaseModel):
     session_hash: str
     src_lang: Optional[str]
     tgt_lang: Optional[str]
-    context_only: Optional[bool]
-    max_history: Optional[int]
+    context_only: Optional[bool] = True
+    max_history: Optional[int] = 10
+    db_path: Optional[str] = os.getenv("DB_PATH")
 
 
 @app.get("/")
@@ -48,14 +49,14 @@ async def read_root() -> JSONResponse:
     return JSONResponse({"info": "DB Service", "version": os.getenv("DB_VERSION"), "vendor": "XXX"})
 
 @app.post("/create_db")
-def create_db(db_name: str=Body(embed=True, default=None)) -> JSONResponse:
-    print(f"db_name: {db_name} ===")
-    db.create_db(db_name=db_name)
+def create_db(db_path: str=Body(embed=True, default=None)) -> JSONResponse:
+    print(f"db_path: {db_path} ===")
+    db.create_db(db_path=db_path)
     
     return JSONResponse({"success": True})
 
 @app.post("/update_file")
-def update_db_from_file(file: UploadFile = File(...), db_name: str=Body(embed=True, default=None)) -> JSONResponse:
+def update_db_from_file(file: UploadFile = File(...), db_path: str=Body(embed=True, default=None)) -> JSONResponse:
     os.makedirs(os.getenv("DB_DATA_PATH_UPLOAD"), exist_ok=True)
     content = file.file.read()
     file_path = os.path.join(os.getenv("DB_DATA_PATH_UPLOAD"), file.filename)
@@ -64,26 +65,26 @@ def update_db_from_file(file: UploadFile = File(...), db_name: str=Body(embed=Tr
             decoded_content = base64.b64decode(content)
             f.write(decoded_content)
             
-    db.add_to_db(data_source=[file_path], db_name=db_name)
+    db.add_to_db(data_source=[file_path], db_path=db_path)
  
     return JSONResponse({"success": True})
 
 @app.post("/update_url")
-def update_db_from_url(url: str=Body(embed=True), db_name: str=Body(embed=True, default=None)) -> JSONResponse:        
-    db.add_to_db(data_source=[url], db_name=db_name)
+def update_db_from_url(url: str=Body(embed=True), db_path: str=Body(embed=True, default=None)) -> JSONResponse:        
+    db.add_to_db(data_source=[url], db_path=db_path)
  
     return JSONResponse({"success": True})
 
 @app.post("/query_db")
-async def query_db(query: str=Body(embed=True), db_name: str=Body(embed=True, default=None), k: int=Body(embed=True, default=4)) -> JSONResponse:
-    content = db.query_db(query, db_name=db_name, k=k)
+async def query_db(query: str=Body(embed=True), db_path: str=Body(embed=True, default=None), k: int=Body(embed=True, default=4)) -> JSONResponse:
+    content = db.query_db(query, db_path=db_path, k=k)
     
     return JSONResponse({"query": query, "content": content})
 
 @app.post("/clear_db")
-def clear_db(db_name: str=Body(embed=True, default=None)) -> JSONResponse:
-    print(f"db_name: {db_name} ===")
-    db.clear_db(db_name)
+def clear_db(db_path: str=Body(embed=True, default=None)) -> JSONResponse:
+    print(f"db_name: {db_path} ===")
+    db.clear_db(db_path)
     
     return JSONResponse({"success": True})
 
@@ -102,7 +103,7 @@ async def create_answer(item: Item) -> dict:
         user_ip_en = item.question
         
     print(f"En query: {user_ip_en}")
-    answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history)['messages'][-1]
+    answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
     
     try:
         answer = json.loads(answer)["answer"]

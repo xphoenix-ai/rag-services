@@ -108,7 +108,29 @@ class GraphApp:
         self.max_history = max_history
         self.llm = CustomLLM()
         
-        vector_db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"), os.getenv("EMBED_MODEL_PATH"))
+        self.rag_chain_dict = self.__create_rag_chain_dict(os.getenv("DB_BASE"))
+        self.rag_chain = None
+        
+        self.c_json = re.compile(r'\{.*?\}', re.DOTALL)
+        
+        self.chat_history = {}   
+        
+        self.app = self.__get_langgraph()
+        
+    def __create_rag_chain_dict(self, db_base):
+        print("[INFO] Creating RAG chains ...")
+        all_db_paths = [os.path.join(db_base, x) for x in os.listdir(db_base) if os.path.isfile(os.path.join(db_base, x, "chroma.sqlite3"))]
+        print(f"all_db_paths: {all_db_paths}")
+        
+        if not all_db_paths:
+            all_db_paths = [os.getenv("DB_PATH")]
+        
+        rag_dict = {os.path.basename(db_path): self.__build_rag_chain(db_path) for db_path in all_db_paths}
+        
+        return rag_dict
+    
+    def __build_rag_chain(self, db_path):
+        vector_db = VectorDB(os.getenv("DB_DATA_PATH"), chroma_db_path=db_path)
         retriever = vector_db.get_retriever()
 
         contextualize_q_prompt = ChatPromptTemplate.from_messages(
@@ -128,13 +150,13 @@ class GraphApp:
         )
 
         question_answer_chain = create_stuff_documents_chain(self.llm, qa_prompt)
-        self.rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-
-        self.c_json = re.compile(r'\{.*?\}', re.DOTALL)
+        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         
-        self.chat_history = {}   
-        
-        self.app = self.__get_langgraph()
+        return rag_chain
+    
+    def __get_rag_chain(self, db_path):
+        print(f"[INFO] RAG chain from {db_path}...")
+        return self.rag_chain_dict[os.path.basename(db_path)]
     
     def __truncate_chat_history(self, session_id):
         if self.max_history is not None:
@@ -218,9 +240,13 @@ class GraphApp:
 
         return app
     
-    def chat(self, en_query, session_id, context_only=False, max_history=None):
+    def chat(self, en_query, session_id, context_only=False, max_history=None, db_path=None):
         if max_history is not None:
             self.max_history = max_history
+        if db_path is None:
+            db_path = os.getenv("DB_PATH")
+            
+        self.rag_chain = self.__get_rag_chain(db_path=db_path)
             
         if context_only:
             answer = self.__do_rag_standalone(en_query, session_id)
