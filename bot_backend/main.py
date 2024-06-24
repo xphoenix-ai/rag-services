@@ -66,12 +66,14 @@ def update_db_from_file(file: UploadFile = File(...), db_path: str=Body(embed=Tr
         f.write(decoded_content)
             
     db.add_to_db(data_source=[file_path], db_path=db_path)
+    graph_app.add_to_rag_chain_dict(db_path)
  
     return JSONResponse({"success": True})
 
 @app.post("/update_url")
 def update_db_from_url(url: str=Body(embed=True), db_path: str=Body(embed=True, default=None)) -> JSONResponse:        
     db.add_to_db(data_source=[url], db_path=db_path)
+    graph_app.add_to_rag_chain_dict(db_path)
  
     return JSONResponse({"success": True})
 

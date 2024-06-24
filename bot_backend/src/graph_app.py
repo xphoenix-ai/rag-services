@@ -241,6 +241,12 @@ class GraphApp:
 
         return app
     
+    def add_to_rag_chain_dict(self, db_path):
+        key = os.path.basename(db_path)
+        if key not in self.rag_chain_dict:
+            print(f"[INFO] Adding RAG chain from {db_path}...")
+            self.rag_chain_dict[key] = self.__build_rag_chain(db_path)
+    
     def chat(self, en_query, session_id, context_only=False, max_history=None, db_path=None):
         if max_history is not None:
             self.max_history = max_history
