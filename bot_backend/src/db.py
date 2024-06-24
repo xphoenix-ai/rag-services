@@ -169,13 +169,13 @@ class VectorDB:
     def clear_db(self, db_path):
         if db_path is None:
             print("[INFO] Specify the DB name to be cleared !")
-            return False
+            return False, "db_path is not specified"
             
         if os.path.exists(db_path):
             vector_store = self.read_db(db_path)
             print("[INFO] Clearining the db...")
             vector_store.delete_collection()
             
-            return True
+            return True, ""
         
-        return False
+        return False, f"{db_path} does not exist"

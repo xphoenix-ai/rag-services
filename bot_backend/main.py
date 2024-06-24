@@ -84,9 +84,9 @@ async def query_db(query: str=Body(embed=True), db_path: str=Body(embed=True, de
 @app.post("/clear_db")
 def clear_db(db_path: str=Body(embed=True, default=None)) -> JSONResponse:
     print(f"db_name: {db_path} ===")
-    db.clear_db(db_path)
+    success, error = db.clear_db(db_path)
     
-    return JSONResponse({"success": True})
+    return JSONResponse({"success": success, "error": error})
 
 @app.post("/answer")
 async def create_answer(item: Item) -> dict:
