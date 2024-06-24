@@ -62,8 +62,8 @@ def update_db_from_file(file: UploadFile = File(...), db_path: str=Body(embed=Tr
     file_path = os.path.join(os.getenv("DB_DATA_PATH_UPLOAD"), file.filename)
     
     with open(file_path, 'wb') as f:
-            decoded_content = base64.b64decode(content)
-            f.write(decoded_content)
+        decoded_content = base64.b64decode(content)
+        f.write(decoded_content)
             
     db.add_to_db(data_source=[file_path], db_path=db_path)
  
