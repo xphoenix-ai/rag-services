@@ -276,7 +276,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"query\": \"Who built Kala wewa?\",\r\n    \"db_name\": \"test_db\",\r\n    \"k\": 2\r\n}",
+					"raw": "{\r\n    \"query\": \"What is the ROE of Commercial Bank in 2023?\",\r\n    \"db_path\": \"DB_STORE/my_db_2\",\r\n    \"k\": 2\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -304,7 +304,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"db_name\": \"test_db\"\r\n}",
+					"raw": "{\r\n    \"db_path\": \"test_db\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -332,7 +332,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"db_name\": \"test_db\"\r\n}",
+					"raw": "{\r\n    \"db_path\": \"test_db\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -360,7 +360,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"url\": \"https://www.combank.lk/personal-banking/term-deposits/fixed-deposits\",\r\n    \"db_name\": \"test_db\"\r\n}",
+					"raw": "{\r\n    \"url\": \"https://www.combank.lk/personal-banking/term-deposits/fixed-deposits\",\r\n    \"db_path\": \"test_db\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -395,7 +395,7 @@
 							"src": "/C:/Users/ASUS/Downloads/1BitLLM.pdf"
 						},
 						{
-							"key": "db_name",
+							"key": "db_path",
 							"value": "test_db",
 							"type": "text"
 						}
