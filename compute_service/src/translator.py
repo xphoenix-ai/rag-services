@@ -31,9 +31,10 @@ class Translator:
     def __translate(self, model, tokenizer, query, tgt_lang_code, streamer=None):
         inputs = tokenizer(query, return_tensors="pt").to(model.device)
         in_len = inputs.input_ids.shape[-1]
-
+        min_length = in_len if tgt_lang_code != "eng_Latn" else None
+        
         translated_tokens = model.generate(
-            **inputs, forced_bos_token_id=tokenizer.lang_code_to_id[tgt_lang_code], max_length=2 * in_len, streamer=streamer, pad_token_id=tokenizer.eos_token_id,
+            **inputs, forced_bos_token_id=tokenizer.lang_code_to_id[tgt_lang_code], min_length=min_length,  max_length=3 * in_len, streamer=streamer, pad_token_id=tokenizer.eos_token_id,
             do_sample=True, temperature=0.1, top_p=0.95, top_k=20, repetition_penalty=1.0
         )
         torch.cuda.empty_cache()
