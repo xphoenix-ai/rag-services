@@ -13,7 +13,16 @@ class Translator:
     }
 
     def __init__(self, translator_path, translitarator_path, load_in_4bit=False, load_in_8bit=False):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.tr_tokenizer_si = None
+        self.tr_tokenizer_en = None
+        self.tr_model_singlish = None
+        self.tr_model = None
+        self.tr_streamer_en = None
+        self.tr_streamer_si = None
+        self.init(translator_path, translitarator_path, load_in_4bit, load_in_8bit)
+        
+    def init(self, translator_path, translitarator_path, load_in_4bit, load_in_8bit):
         self.tr_tokenizer_si = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="sin_Sinh")
         self.tr_tokenizer_en = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="eng_Latn")
 
@@ -88,4 +97,9 @@ class Translator:
         sing_response = self.sinhala_to_singlish(si_response)
         
         return sing_response
+    
+    def is_ready(self) -> bool:
+        if (self.tr_model_singlish is not None) and (self.tr_model is not None):
+            return True
+        return False
         

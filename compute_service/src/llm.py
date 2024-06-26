@@ -5,6 +5,13 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 class LLM:
     def __init__(self, model_path, torch_dtype=torch.float16, low_cpu_mem_usage=True, load_in_4bit=False, load_in_8bit=False, tokenize_with_chat_template=True):
+        self.model = None
+        self.tokenizer = None
+        self.device = None
+        self.tokenize_with_chat_template = tokenize_with_chat_template
+        self.init(model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
+        
+    def init(self, model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left", token=os.getenv("HF_TOKEN"))
         self.tokenizer.pad_token = self.tokenizer.eos_token
         quantization_config = BitsAndBytesConfig(
@@ -20,7 +27,6 @@ class LLM:
             token=os.getenv("HF_TOKEN")
         )
         self.device = self.model.device
-        self.tokenize_with_chat_template = tokenize_with_chat_template
         print("[INFO] LLM service started...")
                 
     # def generate(self, prompt, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1, repetition_penalty=1.0):
@@ -57,3 +63,8 @@ class LLM:
         torch.cuda.empty_cache()
         
         return result
+    
+    def is_ready(self) -> bool:
+        if self.model is not None:
+            return True
+        return False

@@ -2,9 +2,10 @@ import os
 import sys
 import pytz
 import time
+import ngrok
 import uvicorn
 import nest_asyncio
-from pyngrok import ngrok
+# from pyngrok import ngrok
 from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel
@@ -165,6 +166,32 @@ async def generate(llm_input: LLMInput) -> JSONResponse:
     json_obj = jsonable_encoder(res_obj)
     
     return JSONResponse(json_obj)
+
+@app.get("/status")
+async def status() -> JSONResponse:
+    try:
+      llm_status = llm.is_ready()
+    except:
+      llm_status = False
+
+    try:
+      encoder_status = encoder.is_ready()
+    except:
+      encoder_status = False
+
+    try:
+      translator_status = translator.is_ready()
+    except:
+      translator_status = False
+
+    json_obj = {
+        "llm": llm_status,
+        "encoder": encoder_status,
+        "translator": translator_status,
+        "status": llm_status and encoder_status and translator_status 
+    }
+    
+    return JSONResponse(json_obj)
     
 
 if __name__ == "__main__":
@@ -174,9 +201,13 @@ if __name__ == "__main__":
     if os.getenv("EXPOSE_TO_PUBLIC"):
         if os.getenv("NGROK_TOKEN"):
             ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
-        ngrok_tunnel = ngrok.connect(port)
-        print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
+        listener = ngrok.forward(port)
+        # ngrok_tunnel = ngrok.connect(port)
+
+        # print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
+        print(f"[INFO] Public URL for {port}: {listener.url()}")
+        
     
-    nest_asyncio.apply()
+    # nest_asyncio.apply()
     uvicorn.run(app, host=host, port=port)
-    print("[INFO] Translator service started...")
+    print("[INFO] Compute Service started...")
