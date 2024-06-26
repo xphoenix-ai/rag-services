@@ -21,10 +21,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -50,10 +50,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -71,7 +71,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"src\": \"ඔයාට කොහොමද යාලුවේ?\",\r\n    \"src_lang\": \"si\",\r\n    \"tgt_lang\": \"en\"\r\n}",
+					"raw": "{\r\n    \"src\": \"සිගීරියාව කියන්නේ ඉතාම ආකර්ෂණීය ව් යුහයක්. ලියවිල්ලට අනුව, එය පිහිටා ඇත්තේ මීටර් 200 ක් පමණ උසින් ඇති විශාල ගල් තීරුවකයි.\",\r\n    \"src_lang\": \"si\",\r\n    \"tgt_lang\": \"en\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -79,10 +79,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -108,10 +108,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -129,7 +129,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"src\": \"How are you, buddy?\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"sing\"\r\n}",
+					"raw": "{\r\n    \"src\": \"How to open a FD?\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"sing\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -137,10 +137,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -158,7 +158,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"src\": \"According to the Commercial Bank of Ceylon PLC's Annual Report 2023, the bank issued 68,687,375 ordinary shares as part of the final dividend satisfied in the form of issue and allotment of new shares\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"si\"\r\n}",
+					"raw": "{\r\n    \"src\": \"Sigiriya is quite the impressive structure! According to the text, it's located on a massive column of rock that's nearly 200 meters high.\",\r\n    \"src_lang\": \"en\",\r\n    \"tgt_lang\": \"si\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -166,10 +166,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/translate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/translate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -195,10 +195,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/encode",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/encode",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -224,10 +224,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://262e-34-23-151-96.ngrok-free.app/generate",
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/generate",
 					"protocol": "https",
 					"host": [
-						"262e-34-23-151-96",
+						"eec1-34-142-176-214",
 						"ngrok-free",
 						"app"
 					],
@@ -276,7 +276,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"query\": \"What is the ROE of Commercial Bank in 2023?\",\r\n    \"db_path\": \"DB_STORE/my_db_2\",\r\n    \"k\": 2\r\n}",
+					"raw": "{\r\n    \"query\": \"are there fountains in the garden?\",\r\n    \"db_path\": \"DB_STORE_3/my_db\",\r\n    \"k\": 4,\r\n    \"return_score\": true,\r\n    \"return_relevance_socre\": true,\r\n    \"search_kwargs\": {\"score_threshold\": 0.0}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -292,6 +292,34 @@
 					"port": "8002",
 					"path": [
 						"query_db"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search DB",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"search_query\": {\"where\": {\"source\": \"data/SIGIRIYA.pdf\"}, \"limit\": 2},\r\n    \"db_path\": \"DB_STORE_3/my_db\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8002/search_db",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"search_db"
 					]
 				}
 			},
@@ -332,7 +360,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"db_path\": \"test_db\"\r\n}",
+					"raw": "{\r\n    \"db_path\": \"DB_STORE/my_db_1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -360,7 +388,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"url\": \"https://www.combank.lk/personal-banking/term-deposits/fixed-deposits\",\r\n    \"db_path\": \"test_db\"\r\n}",
+					"raw": "{\r\n    \"url\": \"https://www.combank.lk/personal-banking/term-deposits/fixed-deposits\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -410,6 +438,45 @@
 					"port": "8002",
 					"path": [
 						"update_file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Compute Service Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://eec1-34-142-176-214.ngrok-free.app/status",
+					"protocol": "https",
+					"host": [
+						"eec1-34-142-176-214",
+						"ngrok-free",
+						"app"
+					],
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bot BAckend Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8002/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8002",
+					"path": [
+						"status"
 					]
 				}
 			},
