@@ -1,6 +1,7 @@
 import os
 import re
 import bs4
+import time
 import urllib.parse as urlparse
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
@@ -18,7 +19,10 @@ class VectorDB:
         self.bs4_strainer = bs4.SoupStrainer() #class_=bs_classes)
         self.re_multiline = re.compile('\n+')
         
-        self.create_db()
+        if self.embeddings.is_ready():
+            self.create_db()
+        else:
+            print("[INFO] Embedding service is not ready...")
         
     @staticmethod
     def bs4_extractor(html: str) -> str:
@@ -165,18 +169,35 @@ class VectorDB:
         else:
             vector_store = self.read_db(db_path)
             
-        return vector_store.as_retriever()
+        return vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"score_threshold": 0.1})
     
-    def query_db(self, query, db_path=None, k=4):
+    def query_db(self, query, db_path=None, k=4, return_score=True, return_relevance_socre=False, **search_kwargs):
         if db_path is None:
             db_path = self.chroma_db_path
                     
         db = self.read_db(db_path)
-        docs = db.similarity_search(query, k=k)
-
-        content = [doc.page_content for doc in docs]
+        
+        if return_score:
+            if return_relevance_socre:
+                docs = db.similarity_search_with_relevance_scores(query, k=k, **search_kwargs)
+            else:
+                docs = db.similarity_search_with_score(query, k=k)
+            content = [(doc[1], doc[0].page_content) for doc in docs]
+            
+        else:
+            docs = db.similarity_search(query, k=k)
+            content = [doc.page_content for doc in docs]
         
         return content
+    
+    def search_db(self, db_path=None, **search_query):
+        if db_path is None:
+            db_path = self.chroma_db_path
+                    
+        db = self.read_db(db_path)
+        results = db.get(**search_query)
+        
+        return results
     
     def clear_db(self, db_path):
         if db_path is None:
