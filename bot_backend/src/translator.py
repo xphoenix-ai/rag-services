@@ -16,3 +16,12 @@ class Translator:
         response = response.json()
 
         return response["tgt"]
+    
+    def is_ready(self):
+        try:
+            response = requests.get(os.getenv("STATUS_URL"))
+            status = response.json()["translator"]
+        except:
+            status = False
+            
+        return status

@@ -171,3 +171,12 @@ class CustomLLM(LLM):
     def _llm_type(self) -> str:
         """Get the type of language model used by this chat model. Used for logging purposes only."""
         return "custom"
+    
+    def is_ready(self):
+        try:
+            response = requests.get(os.getenv("STATUS_URL"))
+            status = response.json()["llm"]
+        except:
+            status = False
+            
+        return status

@@ -18,6 +18,15 @@ class DocEmbeddings(Embeddings):
         
         return embeddings
     
+    def is_ready(self):
+        try:
+            response = requests.get(os.getenv("STATUS_URL"))
+            status = response.json()["encoder"]
+        except:
+            status = False
+            
+        return status
+    
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """Embed search docs."""
         return self.__get_embeddings(texts)
