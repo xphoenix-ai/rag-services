@@ -118,6 +118,7 @@ async def query_db(query: str=Body(embed=True), db_path: str=Body(embed=True, de
 @app.post("/search_db")
 async def search_db(db_path: str=Body(embed=True, default=None), search_query: dict=Body(embed=True)) -> JSONResponse:
     content = db.search_db(db_path, **search_query)
+    
     return JSONResponse({"content": content})
         
 @app.post("/clear_db")

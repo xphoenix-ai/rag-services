@@ -82,10 +82,10 @@ class LLMOutput(BaseModel):
 
 @app.get("/")
 async def read_root() -> JSONResponse:
-    return JSONResponse({"info": "Translator Service", "version": os.getenv("TR_VERSION"), "vendor": "XXX"})
+    return JSONResponse({"info": "Compute Service", "version": os.getenv("TR_VERSION"), "vendor": "XXX"})
 
 @app.post("/translate")
-async def create_answer(tr_item: TrIntput) -> JSONResponse:
+async def translate(tr_item: TrIntput) -> JSONResponse:
     t_start = time.time()
     
     src_lang = tr_item.src_lang
