@@ -2,10 +2,13 @@ import os
 import re
 import bs4
 import time
+import requests
+import pandas as pd
 import urllib.parse as urlparse
+from langchain.schema.document import Document
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader, RecursiveUrlLoader
+from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader, RecursiveUrlLoader, Docx2txtLoader, CSVLoader
 
 from src.encoder import DocEmbeddings
 
@@ -28,6 +31,39 @@ class VectorDB:
     def bs4_extractor(html: str) -> str:
         soup = bs4.BeautifulSoup(html, "lxml")
         return re.sub(r"\n\n+", "\n\n", soup.text).strip()
+    
+    @staticmethod
+    def convert_html_content_to_text(content: str) -> str:
+        soup = bs4.BeautifulSoup(content, 'lxml')
+        return re.sub(r"\n\n+", "\n\n", soup.text).strip()
+    
+    @staticmethod
+    def url_data_extractor(url: str) -> Document:
+        response = requests.get(url)
+        soup = bs4.BeautifulSoup(response.content, 'html.parser')
+
+        # Extract all tables and convert them to DataFrame strings
+        tables = soup.find_all('table')
+        for table in tables:
+            # df = pd.read_html(str(table))[0]
+            # df_string = df.to_string(index=False)
+            
+            df = pd.read_html(str(table))[0]
+            df_string = df.to_json(orient = 'records')
+            df_string = re.findall(r'\{(.*?)\}', df_string, re.DOTALL)
+            df_string = "\n".join(df_string)
+
+            # Create a new paragraph tag with the DataFrame string
+            new_tag = soup.new_tag('p')
+            new_tag.string = df_string
+
+            # Replace the table with the new paragraph tag
+            table.replace_with(new_tag)
+        
+        html_text = VectorDB.convert_html_content_to_text(str(soup))
+        doc = Document(page_content=html_text)
+        
+        return doc
 
     @staticmethod
     def is_url(url):
@@ -46,6 +82,19 @@ class VectorDB:
         
         return new_docs
     
+    def __csv_processor(self, filepath, csv_args={"delimiter": ","}):
+        loader = CSVLoader(filepath, csv_args=csv_args)
+        docs = loader.load()
+        
+        return docs
+    
+    def __docx_processor(self, filepath):
+        print(f"[INFO] Processing {filepath}...")
+        loader = Docx2txtLoader(filepath)
+        docs = loader.load()
+        
+        return docs
+    
     def __txt_processor(self, filepath):
         print(f"[INFO] Processing {filepath}...")
         loader = TextLoader(filepath)
@@ -60,12 +109,18 @@ class VectorDB:
         
         return docs
     
-    def __url_processor(self, url, max_depth=1):
+    def __url_processor_1(self, url, max_depth=1):
         print(f"[INFO] Processing {url}...")
         loader = RecursiveUrlLoader(url, extractor=self.bs4_extractor, max_depth=max_depth)
         docs = loader.load()
         
         return docs
+    
+    def __url_processor(self, url):
+        print(f"[INFO] Processing {url}...")
+        docs = self.url_data_extractor(url)
+    
+        return [docs]
     
     def __url_processor_old(self, url):
         print(f"[INFO] Processing {url}...")
@@ -86,6 +141,12 @@ class VectorDB:
                 docs = self.__pdf_processor(file)
             elif file.endswith('.txt'):
                 docs = self.__txt_processor(file)
+            elif file.endswith('.docx'):    
+                docs = self.__docx_processor(file)
+            elif file.endswith('.csv'):
+                docs = self.__csv_processor(file)   
+            elif file.endswith('.tsv'):
+                docs = self.__csv_processor(file, csv_args={"delimiter": "\t"})
             else:
                 print(f"[WARNING] Skipping unsupported source document: {file}")
                 continue
