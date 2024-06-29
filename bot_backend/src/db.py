@@ -22,10 +22,16 @@ class VectorDB:
         self.bs4_strainer = bs4.SoupStrainer() #class_=bs_classes)
         self.re_multiline = re.compile('\n+')
         
-        if self.embeddings.is_ready():
-            self.create_db()
-        else:
+        # if self.embeddings.is_ready():
+        #     self.create_db()
+        # else:
+        #     print("[INFO] Embedding service is not ready...")
+            
+        while not self.embeddings.is_ready():
             print("[INFO] Embedding service is not ready...")
+            time.sleep(10)
+        
+        self.create_db()
         
     @staticmethod
     def bs4_extractor(html: str) -> str:

@@ -44,7 +44,7 @@ class Item(BaseModel):
     src_lang: Optional[str]
     tgt_lang: Optional[str]
     context_only: Optional[bool] = True
-    max_history: Optional[int] = 10
+    max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
 
 
@@ -170,8 +170,12 @@ async def create_answer(item: Item) -> dict:
     if translator.is_ready():
         if item.tgt_lang == "si":
             si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
+            if "වාණිජ බැංකු" in si_answer:
+                si_answer = si_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
         elif item.tgt_lang == "sing":
             si_answer = translator.translate(answer, src_lang="en", tgt_lang="sing")
+            if "waanija benku" in si_answer:
+                si_answer = si_answer.replace("waanija benku", "Commercial benku")
         else:
             si_answer = answer
     else:
