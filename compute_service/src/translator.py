@@ -31,16 +31,17 @@ class Translator:
             load_in_8bit=load_in_8bit
         )
         self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
-        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, use_auth_token=True, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto")
+        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_si = TextStreamer(self.tr_tokenizer_si, skip_prompt=True, skip_special_tokens=True)
         print("[INFO] Translation service started...")
         
-    def __translate(self, model, tokenizer, query, tgt_lang_code, streamer=None):
+    def __translate(self, model, tokenizer, query, tgt_lang_code, streamer=None, use_min_length=False):
         inputs = tokenizer(query, return_tensors="pt").to(model.device)
         in_len = inputs.input_ids.shape[-1]
-        min_length = in_len if tgt_lang_code != "eng_Latn" else None
+        # min_length = in_len if tgt_lang_code != "eng_Latn" else None
+        min_length = in_len if use_min_length else None
         
         translated_tokens = model.generate(
             **inputs, forced_bos_token_id=tokenizer.lang_code_to_id[tgt_lang_code], min_length=min_length,  max_length=3 * in_len, streamer=streamer, pad_token_id=tokenizer.eos_token_id,
@@ -60,7 +61,7 @@ class Translator:
     def english_to_sinhala(self, en_query):
         """en --> si"""
         # en --> si
-        si_response = self.__translate(self.tr_model, self.tr_tokenizer_en, en_query, "sin_Sinh", streamer=None)
+        si_response = self.__translate(self.tr_model, self.tr_tokenizer_en, en_query, "sin_Sinh", streamer=None, use_min_length=True)
         
         return si_response
     
