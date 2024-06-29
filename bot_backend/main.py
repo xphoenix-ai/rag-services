@@ -187,7 +187,7 @@ async def create_answer(item: Item) -> dict:
     return {"answer": answer, "si_answer": si_answer, "success": True, "error": "", "time_taken": (t_end - t_start)}
 
 @app.post("/clear_history")
-def clear_history(session_hash: str=Body(embed=True)) -> JSONResponse:
+async def clear_history(session_hash: str=Body(embed=True)) -> JSONResponse:
     success, error = graph_app.clear_history(session_hash)
     
     return JSONResponse({"success": success, "error": error})
