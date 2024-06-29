@@ -305,6 +305,9 @@ class GraphApp:
     def clear_history(self, session_id):
         if session_id in self.chat_history:
             self.chat_history[session_id] = []
+            return True, ""
+        
+        return False, "No history found"
             
     def is_ready(self):
         return self.llm.is_ready()
