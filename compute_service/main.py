@@ -4,8 +4,6 @@ import pytz
 import time
 import ngrok
 import uvicorn
-import nest_asyncio
-# from pyngrok import ngrok
 from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel
@@ -15,9 +13,10 @@ from dotenv import load_dotenv, dotenv_values
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.llm import LLM
-from src.encoder import Encoder
-from src.translator import Translator
+from src.llm.hf.llm import LLM
+from src.encoder.st.encoder import Encoder
+from src.translator.nllb.translator import Translator
+
 
 load_dotenv()
 
@@ -71,6 +70,7 @@ class LLMInput(BaseModel):
     top_k: Optional[int]
     top_p: Optional[float]
     temperature: Optional[float]
+
 
 class LLMOutput(BaseModel):
     prompt: str
@@ -202,12 +202,8 @@ if __name__ == "__main__":
         if os.getenv("NGROK_TOKEN"):
             ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
         listener = ngrok.forward(port)
-        # ngrok_tunnel = ngrok.connect(port)
 
-        # print(f"[INFO] Public URL: {ngrok_tunnel.public_url}")
         print(f"[INFO] Public URL for {port}: {listener.url()}")
-        
-    
-    # nest_asyncio.apply()
+            
     uvicorn.run(app, host=host, port=port)
     print("[INFO] Compute Service started...")
