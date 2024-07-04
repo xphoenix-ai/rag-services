@@ -23,6 +23,7 @@ class LLM(LLMBase):
                 load_in_8bit=load_in_8bit
             )
         else:
+            torch_dtype = torch.float32
             quantization_config = None
             
         self.model = AutoModelForCausalLM.from_pretrained(
