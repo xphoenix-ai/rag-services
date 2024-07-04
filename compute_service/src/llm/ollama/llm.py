@@ -10,11 +10,12 @@ from src.llm.llm_base import LLMBase
 class LLM(LLMBase):
     def __init__(
         self, 
-        model_path="phi3",
+        model_path="llama3:instruct",
         keep_alive="5m",
         tokenize_with_chat_template=True
         ):
         self.model = None
+        self.model_path = model_path
         self.keep_alive = keep_alive
         self.tokenize_with_chat_template = tokenize_with_chat_template
         self.default_generation_config = {
@@ -45,7 +46,7 @@ class LLM(LLMBase):
         
         if self.tokenize_with_chat_template:
             response = chat(
-                model='phi3', 
+                model=self.model_path, 
                 messages=[
                     {
                         'role': 'user',
@@ -57,7 +58,7 @@ class LLM(LLMBase):
             )
         else:
             response = generate(
-                model='phi3',
+                model=self.model_path,
                 prompt=prompt,
                 keep_alive=self.keep_alive,
                 options=full_generation_config 
