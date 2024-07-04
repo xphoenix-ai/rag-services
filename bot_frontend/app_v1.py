@@ -81,7 +81,8 @@ def clear_history(history, request: gr.Request):
         return ''
     else:
         gr.Warning("Failed to clear history.")
-        return history
+        # return history
+        return ''
 
  
 with gr.Blocks() as demo:
