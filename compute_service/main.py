@@ -13,12 +13,19 @@ from dotenv import load_dotenv, dotenv_values
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.llm.hf.llm import LLM
-from src.encoder.st.encoder import Encoder
-from src.translator.nllb.translator import Translator
+from utils.get_module_by_name import get_module
+# from src.llm.hf.llm import LLM
+# from src.encoder.st.encoder import Encoder
+# from src.translator.nllb.translator import Translator
 
 
 load_dotenv()
+
+
+LLM = get_module(f"src.llm.{os.getenv('LLM_CLASS', 'hf')}.llm", "LLM")
+Encoder = get_module(f"src.encoder.{os.getenv('ENCODER_CLASS', 'st')}.encoder", "Encoder")
+Translator = get_module(f"src.translator.{os.getenv('TRANSLATOR_CLASS', 'nllb')}.translator", "Translator")
+
 
 app = FastAPI()
 
@@ -65,11 +72,11 @@ class EmbdOutput(BaseModel):
 
 class LLMInput(BaseModel):
     prompt: str
-    do_sample: bool
-    max_new_tokens: int
-    top_k: Optional[int]
-    top_p: Optional[float]
-    temperature: Optional[float]
+    do_sample: bool = True
+    max_new_tokens: int = 200
+    top_k: Optional[int] = 20
+    top_p: Optional[float] = 0.95
+    temperature: Optional[float] = 0.1
 
 
 class LLMOutput(BaseModel):
