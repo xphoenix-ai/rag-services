@@ -108,6 +108,7 @@ async def query_db(query: str=Body(embed=True), db_path: str=Body(embed=True, de
     error = ""
     if db.embeddings.is_ready():
         content = db.query_db(query, db_path=db_path, k=k, return_score=return_score, return_relevance_socre=return_relevance_socre, **search_kwargs)
+        # content = await db.query_db(query, db_path=db_path, k=k, return_score=return_score, return_relevance_socre=return_relevance_socre, **search_kwargs)
         success = True
     else:
         success = False
@@ -118,6 +119,7 @@ async def query_db(query: str=Body(embed=True), db_path: str=Body(embed=True, de
 @app.post("/search_db")
 async def search_db(db_path: str=Body(embed=True, default=None), search_query: dict=Body(embed=True)) -> JSONResponse:
     content = db.search_db(db_path, **search_query)
+    # content = await db.search_db(db_path, **search_query)
     
     return JSONResponse({"content": content})
         
@@ -143,8 +145,10 @@ async def create_answer(item: Item) -> dict:
     if translator.is_ready():
         if item.src_lang == "sing":
             user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
+            # user_ip_en = await translator.translate(item.question, src_lang="sing", tgt_lang="en")
         elif item.src_lang == "si":
             user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en")
+            # user_ip_en = await translator.translate(item.question, src_lang="si", tgt_lang="en")
         else:
             user_ip_en = item.question
     else:
@@ -157,6 +161,7 @@ async def create_answer(item: Item) -> dict:
     
     if graph_app.is_ready():
         answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
+        # answer = await graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
         try:
             answer = json.loads(answer)["answer"]
         except Exception:
@@ -170,10 +175,12 @@ async def create_answer(item: Item) -> dict:
     if translator.is_ready():
         if item.tgt_lang == "si":
             si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
+            # si_answer = await translator.translate(answer, src_lang="en", tgt_lang="si")
             if "වාණිජ බැංකු" in si_answer:
                 si_answer = si_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
         elif item.tgt_lang == "sing":
             si_answer = translator.translate(answer, src_lang="en", tgt_lang="sing")
+            # si_answer = await translator.translate(answer, src_lang="en", tgt_lang="sing")
             if "waanija benku" in si_answer:
                 si_answer = si_answer.replace("waanija benku", "Commercial benku")
         else:
@@ -193,6 +200,7 @@ async def create_answer(item: Item) -> dict:
 @app.post("/clear_history")
 async def clear_history(session_hash: str=Body(embed=True)) -> JSONResponse:
     success, error = graph_app.clear_history(session_hash)
+    # success, error = await graph_app.clear_history(session_hash)
     
     return JSONResponse({"success": success, "error": error})
 

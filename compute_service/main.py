@@ -21,10 +21,9 @@ from utils.get_module_by_name import get_module
 
 load_dotenv()
 
-
 LLM = get_module(f"src.llm.{os.getenv('LLM_CLASS', 'hf')}.llm", "LLM")
-Encoder = get_module(f"src.encoder.{os.getenv('ENCODER_CLASS', 'st')}.encoder", "Encoder")
 Translator = get_module(f"src.translator.{os.getenv('TRANSLATOR_CLASS', 'nllb')}.translator", "Translator")
+Encoder = get_module(f"src.encoder.{os.getenv('ENCODER_CLASS', 'st')}.encoder", "Encoder")
 
 
 app = FastAPI()
@@ -102,16 +101,22 @@ async def translate(tr_item: TrIntput) -> JSONResponse:
     
     if src_lang == "sing" and tgt_lang == "en":
         res = translator.singlish_to_english(src)
+        # res = await translator.singlish_to_english(src)
     elif src_lang == "sing" and tgt_lang == "si":
         res = translator.singlish_to_sinhala(src)
+        # res = await translator.singlish_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "si":
         res = translator.english_to_sinhala(src)
+        # res = await translator.english_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "sing":
         res = translator.english_to_singlish(src)
+        # res = await translator.english_to_singlish(src)
     elif src_lang == "si" and tgt_lang == "sing":
         res = translator.sinhala_to_singlish(src)
+        # res = await translator.sinhala_to_singlish(src)
     elif src_lang == "si" and tgt_lang == "en":
         res = translator.sinhala_to_english(src)
+        # res = await translator.sinhala_to_english(src)
     elif src_lang == tgt_lang:
         res = src
     else:
@@ -139,6 +144,7 @@ async def encode(embed_item: EmbdIntput) -> JSONResponse:
     
     sentences = embed_item.sentences
     embeddings = encoder.encode(sentences)
+    # embeddings = await encoder.encode(sentences)
     error = ""
     
     t_end = time.time()
@@ -160,6 +166,7 @@ async def generate(llm_input: LLMInput) -> JSONResponse:
     prompt = llm_input.prompt
     generation_config = llm_input.model_dump(exclude=["prompt"])
     response = llm.generate(prompt, **generation_config)
+    # response = await llm.generate(prompt, **generation_config)
     error = ""
     
     t_end = time.time()
@@ -178,16 +185,19 @@ async def generate(llm_input: LLMInput) -> JSONResponse:
 async def status() -> JSONResponse:
     try:
       llm_status = llm.is_ready()
+    #   llm_status = await llm.is_ready()
     except:
       llm_status = False
 
     try:
       encoder_status = encoder.is_ready()
+    #   encoder_status = await encoder.is_ready()
     except:
       encoder_status = False
 
     try:
       translator_status = translator.is_ready()
+    #   translator_status = await translator.is_ready()
     except:
       translator_status = False
 
