@@ -1,5 +1,6 @@
 import os
 import torch
+from accelerate import disk_offload
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoConfig, BitsAndBytesConfig, TextStreamer
 
 from utils.unicode_converter import sinhala_to_singlish
@@ -28,11 +29,15 @@ class Translator(TranslatorBase):
                 load_in_4bit=load_in_4bit,
                 load_in_8bit=load_in_8bit
             )
+            torch_dtype = torch.float16
         else:
+            torch_dtype = torch.float32
             quantization_config = None
             
-        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
-        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, low_cpu_mem_usage=True, torch_dtype=torch.float16, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        # disk_offload(model=self.tr_model_singlish, offload_dir="tr_model_singlish")
+        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, low_cpu_mem_usage=True, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        # disk_offload(model=self.tr_model, offload_dir="tr_model")
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_si = TextStreamer(self.tr_tokenizer_si, skip_prompt=True, skip_special_tokens=True)
