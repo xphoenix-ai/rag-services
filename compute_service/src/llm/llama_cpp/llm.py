@@ -19,7 +19,8 @@ class LLM(LLMBase):
             "max_tokens": 200,
             "top_k": 20,
             "top_p": 0.95,
-            "temperature": 0.1,            
+            "temperature": 0.1,
+            "echo": False         
         }
         super().__init__(model_path, filename, chat_format)
         
