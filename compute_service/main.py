@@ -4,15 +4,16 @@ import pytz
 import time
 import ngrok
 import uvicorn
-from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel
+from fastapi import FastAPI, Body
 from typing import Union, Optional
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv, dotenv_values
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 
+from utils.config_reader import get_config
 from utils.get_module_by_name import get_module
 # from src.llm.hf.llm import LLM
 # from src.encoder.st.encoder import Encoder
@@ -21,14 +22,21 @@ from utils.get_module_by_name import get_module
 
 load_dotenv()
 
-LLM = get_module(f"src.llm.{os.getenv('LLM_CLASS', 'hf')}.llm", "LLM")
-Translator = get_module(f"src.translator.{os.getenv('TRANSLATOR_CLASS', 'nllb')}.translator", "Translator")
-Encoder = get_module(f"src.encoder.{os.getenv('ENCODER_CLASS', 'st')}.encoder", "Encoder")
+llm_class = os.getenv('LLM_CLASS', 'hf')
+encoder_class = os.getenv('ENCODER_CLASS', 'st')
+translator_class = os.getenv('TRANSLATOR_CLASS', 'nllb')
 
+llm_config = get_config("llm_config.yml")[llm_class]
+print(f"LLM Config: {llm_config}")
+
+
+LLM = get_module(f"src.llm.{llm_class}.llm", "LLM")
+Translator = get_module(f"src.translator.{translator_class}.translator", "Translator")
+Encoder = get_module(f"src.encoder.{encoder_class}.encoder", "Encoder")
 
 app = FastAPI()
 
-llm = LLM(os.getenv("LLM_PATH"))
+llm = LLM(**llm_config["model_config"])
 translator = Translator(os.getenv("TRANSLATOR_PATH"), os.getenv("TRANLITARATOR_PATH"))
 encoder = Encoder(os.getenv("EMBED_MODEL_PATH"))
 
@@ -69,13 +77,13 @@ class EmbdOutput(BaseModel):
     error: Optional[str]
     
 
-class LLMInput(BaseModel):
-    prompt: str
-    do_sample: bool = True
-    max_new_tokens: int = 200
-    top_k: Optional[int] = 20
-    top_p: Optional[float] = 0.95
-    temperature: Optional[float] = 0.1
+# class LLMInput(BaseModel):
+#     prompt: str
+#     do_sample: bool = True
+#     max_new_tokens: int = 200
+#     top_k: Optional[int] = 20
+#     top_p: Optional[float] = 0.95
+#     temperature: Optional[float] = 0.1
 
 
 class LLMOutput(BaseModel):
@@ -160,11 +168,13 @@ async def encode(embed_item: EmbdIntput) -> JSONResponse:
     return JSONResponse(json_obj)
 
 @app.post("/generate")
-async def generate(llm_input: LLMInput) -> JSONResponse:
+# async def generate(llm_input: LLMInput) -> JSONResponse:
+async def generate(
+    prompt: str=Body(embed=True), 
+    generation_config: dict=Body(embed=True, default=llm_config["generation_config"])
+    ) -> JSONResponse:
     t_start = time.time()
     
-    prompt = llm_input.prompt
-    generation_config = llm_input.model_dump(exclude=["prompt"])
     response = llm.generate(prompt, **generation_config)
     # response = await llm.generate(prompt, **generation_config)
     error = ""

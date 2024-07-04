@@ -40,7 +40,8 @@ class LLM(LLMBase):
     def generate(self, prompt, **generation_config):
         torch.cuda.empty_cache()
         
-        generation_config = self.default_generation_config
+        full_generation_config = self.default_generation_config
+        full_generation_config.update(generation_config)
         
         if self.tokenize_with_chat_template:
             response = chat(
@@ -52,14 +53,14 @@ class LLM(LLMBase):
                     },
                 ],
                 keep_alive=self.keep_alive,
-                options=generation_config
+                options=full_generation_config
             )
         else:
             response = generate(
                 model='phi3',
                 prompt=prompt,
                 keep_alive=self.keep_alive,
-                options=generation_config 
+                options=full_generation_config 
             )
         result = response['message']['content']
         torch.cuda.empty_cache()
