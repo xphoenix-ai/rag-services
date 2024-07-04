@@ -236,7 +236,7 @@ class VectorDB:
         else:
             vector_store = self.read_db(db_path)
             
-        return vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"score_threshold": 0.1})
+        return vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"score_threshold": 0.1, "k": 5})
     
     def query_db(self, query, db_path=None, k=4, return_score=True, return_relevance_socre=False, **search_kwargs):
         if db_path is None:
