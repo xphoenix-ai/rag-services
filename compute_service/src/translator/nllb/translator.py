@@ -14,14 +14,14 @@ class Translator(TranslatorBase):
         "sing": "eng_Latn"
     }
 
-    def __init__(self, translator_path: str, translitarator_path: str, load_in_4bit: bool=False, load_in_8bit: bool=False):
+    def __init__(self, translator_path: str, translitarator_path: str, torch_dtype=torch.float16, low_cpu_mem_usage=True, load_in_4bit: bool=False, load_in_8bit: bool=False):
         self.tr_tokenizer_si = None
         self.tr_tokenizer_en = None
         self.tr_streamer_en = None
         self.tr_streamer_si = None
-        super().__init__(translator_path, translitarator_path, load_in_4bit, load_in_8bit)
+        super().__init__(translator_path, translitarator_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
         
-    def _load_model(self, translator_path: str, translitarator_path: str, load_in_4bit: bool, load_in_8bit: bool) -> None:
+    def _load_model(self, translator_path: str, translitarator_path: str, torch_dtype, low_cpu_mem_usage: bool, load_in_4bit: bool, load_in_8bit: bool) -> None:
         self.tr_tokenizer_si = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="sin_Sinh")
         self.tr_tokenizer_en = AutoTokenizer.from_pretrained(translator_path, use_auth_token=True, src_lang="eng_Latn")
         if torch.cuda.is_available():
@@ -29,14 +29,13 @@ class Translator(TranslatorBase):
                 load_in_4bit=load_in_4bit,
                 load_in_8bit=load_in_8bit
             )
-            torch_dtype = torch.float16
         else:
             torch_dtype = torch.float32
             quantization_config = None
             
-        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=True, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
         # disk_offload(model=self.tr_model_singlish, offload_dir="tr_model_singlish")
-        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, low_cpu_mem_usage=True, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
+        self.tr_model = AutoModelForSeq2SeqLM.from_pretrained(translator_path, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype, quantization_config=quantization_config, device_map="auto", token=os.getenv("HF_TOKEN"))
         # disk_offload(model=self.tr_model, offload_dir="tr_model")
 
         self.tr_streamer_en = TextStreamer(self.tr_tokenizer_en, skip_prompt=True, skip_special_tokens=True)

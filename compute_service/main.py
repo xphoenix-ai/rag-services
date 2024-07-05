@@ -29,6 +29,11 @@ translator_class = os.getenv('TRANSLATOR_CLASS', 'nllb')
 llm_config = get_config("llm_config.yml")[llm_class]
 print(f"LLM Config: {llm_config}")
 
+translator_config = get_config("translator_config.yml")[translator_class]
+print(f"Translator Config: {translator_config}")
+
+encoder_config = get_config("encoder_config.yml")[encoder_class]
+print(f"Encoder Config: {encoder_config}")
 
 LLM = get_module(f"src.llm.{llm_class}.llm", "LLM")
 Translator = get_module(f"src.translator.{translator_class}.translator", "Translator")
@@ -37,8 +42,8 @@ Encoder = get_module(f"src.encoder.{encoder_class}.encoder", "Encoder")
 app = FastAPI()
 
 llm = LLM(**llm_config["model_config"])
-translator = Translator(os.getenv("TRANSLATOR_PATH"), os.getenv("TRANLITARATOR_PATH"))
-encoder = Encoder(os.getenv("EMBED_MODEL_PATH"))
+translator = Translator(**translator_config["model_config"])
+encoder = Encoder(**encoder_config["model_config"])
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,0 +1,4 @@
+st:
+  model_config:
+    model_path:
+    device: cuda
