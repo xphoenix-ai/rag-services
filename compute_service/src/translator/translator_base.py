@@ -75,9 +75,16 @@ class TranslatorBase(ABC):
     
     @staticmethod
     def preprocess(x: str) -> str:
-        return x.replace('.', '#,')
+        x, last = x[:-1], x[-1] 
+        x = x.replace('.', '#,')
+        x = x.replace('?', '`,')
+        x = x.replace('!', '^,')
+        return f"{x}{last}"
 
     @staticmethod
     def postprocess(x: str) -> str:
-        return x.replace('#,', '.')
+        x = x.replace('#,', '.')
+        x = x.replace('`,', '?')
+        x = x.replace('^,', '!')
+        return x
         
