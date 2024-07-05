@@ -72,4 +72,12 @@ class TranslatorBase(ABC):
         if (self.tr_model_singlish is not None) and (self.tr_model is not None):
             return True
         return False
+    
+    @staticmethod
+    def preprocess(x: str) -> str:
+        return x.replace('.', '#,')
+
+    @staticmethod
+    def postprocess(x: str) -> str:
+        return x.replace('#,', '.')
         
