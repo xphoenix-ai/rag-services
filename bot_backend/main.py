@@ -48,6 +48,15 @@ class Item(BaseModel):
     db_path: Optional[str] = os.getenv("DB_PATH")
 
 
+def convert_first_letter(sentence):
+    sentence = sentence.strip()
+    words = sentence.split()
+    if words[0].isupper():
+        return sentence
+    else:
+        return sentence[0].lower() + sentence[1:]
+
+
 @app.get("/")
 async def read_root() -> JSONResponse:
     return JSONResponse({"info": "DB Service", "version": os.getenv("DB_VERSION"), "vendor": "XXX"})
@@ -144,7 +153,8 @@ async def create_answer(item: Item) -> dict:
     
     if translator.is_ready():
         if item.src_lang == "sing":
-            user_ip_en = translator.translate(item.question, src_lang="sing", tgt_lang="en")
+            question = convert_first_letter(item.question)
+            user_ip_en = translator.translate(question, src_lang="sing", tgt_lang="en")
             # user_ip_en = await translator.translate(item.question, src_lang="sing", tgt_lang="en")
         elif item.src_lang == "si":
             user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en")
