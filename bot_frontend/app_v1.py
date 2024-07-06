@@ -135,7 +135,7 @@ with gr.Blocks() as demo:
             fn=add_text,
             inputs=[chatbot,txt],
             outputs=[chatbot, ],
-            queue=False).success(
+            queue=True).success(
             fn=generate_answer,
             inputs = [chatbot, txt, src_language, tgt_language],
             outputs = [chatbot,txt])
@@ -144,13 +144,13 @@ with gr.Blocks() as demo:
         fn=clear_history,
         inputs=[chatbot],
         outputs=[chatbot],
-        queue=False)
+        queue=True)
  
     url_submit_btn.click(
             fn=upload_website,
             inputs=[web_url],
             outputs=[web_url],
-            queue=False)
+            queue=True)
 
 
 demo.queue()
