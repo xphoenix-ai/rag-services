@@ -14,6 +14,9 @@ from src.encoder import DocEmbeddings
 
 
 class VectorDB:
+    
+    c_unnamed = re.compile(r'\"Unnamed: \d+\":')
+
     def __init__(self, data_path, chroma_db_path):
         self.data_path = data_path
         self.chroma_db_path = chroma_db_path
@@ -58,6 +61,7 @@ class VectorDB:
             df_string = df.to_json(orient = 'records')
             df_string = re.findall(r'\{(.*?)\}', df_string, re.DOTALL)
             df_string = "\n".join(df_string)
+            df_string = VectorDB.c_unnamed.sub("", df_string)
 
             # Create a new paragraph tag with the DataFrame string
             new_tag = soup.new_tag('p')
