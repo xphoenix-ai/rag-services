@@ -137,7 +137,7 @@ class GraphApp:
 
     """
     
-    def __init__(self, max_history=None, max_idle_time=5*60):
+    def __init__(self, max_history=None, max_idle_time=2*3600):
         self.max_history = max_history
         self.max_idle_time = max_idle_time
         self.llm = CustomLLM()
