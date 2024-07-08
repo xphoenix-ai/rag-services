@@ -1,8 +1,10 @@
 import re
 import os
+import time
 import json
 import torch
 import operator
+import threading
 import transformers
 from string import Template
 from langchain import HuggingFacePipeline
@@ -135,8 +137,9 @@ class GraphApp:
 
     """
     
-    def __init__(self, max_history=None):
+    def __init__(self, max_history=None, max_idle_time=5*60):
         self.max_history = max_history
+        self.max_idle_time = max_idle_time
         self.llm = CustomLLM()
         
         self.rag_chain_dict = self.__create_rag_chain_dict(os.getenv("DB_BASE"))
@@ -199,19 +202,24 @@ class GraphApp:
     
     def __truncate_chat_history(self, session_id):
         if self.max_history is not None:
-            self.chat_history[session_id] = self.chat_history[session_id][-self.max_history:]
+            # self.chat_history[session_id] = self.chat_history[session_id][-self.max_history:]
+            self.chat_history[session_id]["chat"] = self.chat_history[session_id]["chat"][-self.max_history:]
 
     def __do_rag_standalone(self, en_query, session_id) -> dict:
         if session_id not in self.chat_history:
-            self.chat_history[session_id] = []
+            # self.chat_history[session_id] = []
+            self.chat_history[session_id] = {"updated_time": time.time(), "chat": []}
         
         self.__truncate_chat_history(session_id)
-        result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
+        # result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
+        result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]["chat"]})
         print(f">>> RAG result: {result}")
         full_answer = result['answer']
         answer = full_answer.rsplit("### Response", 1)[-1].strip()
 
-        self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        # self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        self.chat_history[session_id]["chat"].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        self.chat_history[session_id]["updated_time"] = time.time()
         
         return {"messages": [answer], "session_id": session_id}
         
@@ -219,15 +227,19 @@ class GraphApp:
         session_id = state["session_id"]
         en_query = state["messages"][-2]
         if session_id not in self.chat_history:
-            self.chat_history[session_id] = []
+            # self.chat_history[session_id] = []
+            self.chat_history[session_id] = {"updated_time": time.time(), "chat": []}
         
         self.__truncate_chat_history(session_id)
-        result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
+        # result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
+        result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]["chat"]})
         print(f">>> RAG result: {result}")
         full_answer = result['answer']
         answer = full_answer.rsplit("### Response", 1)[-1].strip()
 
-        self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        # self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        self.chat_history[session_id]["chat"].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
+        self.chat_history[session_id]["updated_time"] = time.time()
 
         return {"messages": [answer], "session_id": state["session_id"]}
     
@@ -248,7 +260,9 @@ class GraphApp:
             classifier_response = json.loads(response)
             
             if classifier_response["category"] == "do_answer":
-                self.chat_history[state["session_id"]].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
+                # self.chat_history[state["session_id"]].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
+                self.chat_history[state["session_id"]]["chat"].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
+                self.chat_history[state["session_id"]]["updated_time"] = time.time()
         else:
             response = '{"category": "do_rag", "answer": ""}'
                 
@@ -279,6 +293,25 @@ class GraphApp:
 
         return app
     
+    def __clear_history_cache(self, max_idle_time):
+        curr_ts = time.time()
+        tot_num = len(self.chat_history)
+        cleared_num = 0
+        
+        for session_id in self.chat_history.copy():
+            if curr_ts - self.chat_history[session_id]["updated_time"] > max_idle_time:
+                del self.chat_history[session_id]
+                cleared_num += 1
+        
+        print(f"[INFO] Cleared {cleared_num} idle chats from {tot_num} chats.")
+    
+    def chear_chat_cache(self, max_idle_time=None) -> None:
+        """
+        clear old chat history cache in background
+        """
+        thread = threading.Thread(target=self.__clear_history_cache, args=(max_idle_time, ))
+        thread.start()
+    
     def add_to_rag_chain_dict(self, db_path, force=False):
         key = os.path.normpath(db_path)
         if force or key not in self.rag_chain_dict:
@@ -299,12 +332,14 @@ class GraphApp:
             inputs = {"messages": [en_query], "session_id": session_id}
             answer = self.app.invoke(inputs)
         print(f"Answer list: {answer} =====")
+        self.chear_chat_cache(self.max_idle_time)
         
         return {"messages": answer["messages"]}
     
     def clear_history(self, session_id):
         if session_id in self.chat_history:
-            self.chat_history[session_id] = []
+            # self.chat_history[session_id] = []
+            self.chat_history[session_id] = {"updated_time": time.time(), "chat": []}
             return True, ""
         
         return False, "No history found"
