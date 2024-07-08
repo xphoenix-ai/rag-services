@@ -1,3 +1,4 @@
+import os
 import json
 import ngrok
 import codecs
@@ -62,8 +63,8 @@ def upload_file(files):
     for file in files:
         with open(file, 'rb') as pdf_file:
             base64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
-            files = {'file': (file.name, base64_pdf, 'application/pdf')}
-            data_json = {'db_path': 'dbpath'}
+            files = {'file': (os.path.basename(file.name), base64_pdf, 'application/pdf')}
+            data_json = {}
            
             #response = requests.post(url, files=files, data=data_json)
             response = requests.post(url, files=files, data=data_json)
