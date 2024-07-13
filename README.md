@@ -17,3 +17,23 @@ This is the full RAG pipeline which answers a user query using the available kno
 - **DB Service** - The RAG knowledge base store
 ### Client App:
 Client frontend App that the user interacts with the bot/system.
+
+## Dockerization
+
+The services can be containerized using the following steps.
+### Build the Image:
+```docker build -t rag_services .```
+
+### Run the Container
+```docker run --gpus all -p 8001:8001 -p8002:8002 -p 7860:7860 rag_services```
+
+You can access the services as follws
+#### Linux:
+- compute service: http://127.0.0.1:8001
+- bot backend: http://127.0.0.1:8002
+- client app: http://127.0.0.1:7860
+
+#### Windows (127.0.0.1 may not work in Windows):
+- compute service: http://host.docker.internal:8001
+- bot backend: http://host.docker.internal:8002
+- client app: http://host.docker.internal:7860
