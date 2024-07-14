@@ -14,7 +14,9 @@ SHELL ["/bin/bash", "--login", "-c"]
 RUN echo "Make sure fastapi is installed:"
 RUN python -c "import fastapi"
 
-ADD /rag_services /rag_services
+ADD /bot_backend /rag_services/bot_backend
+ADD /bot_frontend /rag_services/bot_frontend
+ADD /compute_service /rag_services/compute_service
 
 EXPOSE 8001
 EXPOSE 8002
