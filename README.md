@@ -25,7 +25,7 @@ The services can be containerized using the following steps.
 ```docker build -t rag_services .```
 
 ### Run the Container
-```docker run --gpus all -p 8001:8001 -p8002:8002 -p 7860:7860 rag_services```
+```docker run --gpus all -p 8001:8001 -p 8002:8002 -p 7860:7860 rag_services```
 
 You can access the services as follws
 #### Linux:
