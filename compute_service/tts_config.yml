@@ -1,0 +1,7 @@
+hf:
+  model_config:
+    model_path: "microsoft/speecht5_tts"
+    # model_path: "suno/bark-small"
+    device: "cpu"
+    torch_dtype: torch.float32
+    
