@@ -63,7 +63,7 @@ class TTSBase(ABC):
         return False
     
     @staticmethod
-    def save_audio(audio_array: np.ndarray, sample_rate: int, file_name: str):
+    def save_audio(audio_array: np.ndarray, sample_rate: int, file_name: str) -> None:
         """dump given audio array to a file
 
         Args:
@@ -72,3 +72,18 @@ class TTSBase(ABC):
             file_name (str): Target file path
         """
         sf.write(file_name, audio_array, samplerate=sample_rate)
+
+    @staticmethod
+    def play_audio(audio_array: np.ndarray, sample_rate: int) -> None:
+        """
+        Plays the given audio data using the sounddevice library.
+
+        Args:
+            sample_rate (int): The sample rate of the audio data.
+            audio_array (numpy.ndarray): The audio data to be played.
+
+        Returns:
+            None
+        """
+        sf.play(audio_array, sample_rate)
+        sf.wait()
