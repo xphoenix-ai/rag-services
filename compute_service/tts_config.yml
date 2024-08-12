@@ -4,4 +4,14 @@ hf:
     # model_path: "suno/bark-small"
     device: "cpu"
     torch_dtype: torch.float32
+
+coqui:
+  model_config:
+    model_path: "tts_models/en/ljspeech/vits"
+    # model_path: "tts_models/en/vctk/vits"
+    device: "cpu"
+  generation_config:
+    language: None
+    speaker: None
+    speaker_wav: None
     
