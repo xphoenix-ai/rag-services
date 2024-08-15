@@ -49,7 +49,7 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
         response = requests.post(url, json=data_dict)
         response_dict = json.loads(response.content)
     
-        for char in str(response_dict['si_answer']):  
+        for char in str(response_dict['answer']):  
             if history:
                 history[-1][-1] += char
             yield history,''
