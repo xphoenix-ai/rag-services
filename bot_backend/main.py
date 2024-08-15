@@ -17,6 +17,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Body
 
+from src.stt import STT
+from src.tts import TTS
 from src.db import VectorDB
 from src.graph_app import GraphApp
 from src.translator import Translator
@@ -29,6 +31,8 @@ app = FastAPI()
 db = VectorDB(os.getenv("DB_DATA_PATH"), os.getenv("DB_PATH"))
 graph_app = GraphApp()
 translator = Translator()
+stt = STT()
+tts = TTS()
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,11 +43,14 @@ app.add_middleware(
 )
 
 class Item(BaseModel):
-    question: str
+    question: Optional[str] = ""
+    audio_data: Optional[list] = []
+    sample_rate: Optional[int] = 16_000
     session_hash: str
     src_lang: Optional[str]
     tgt_lang: Optional[str]
     context_only: Optional[bool] = True
+    audio_ouput: Optional[bool] = False
     max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
 
@@ -150,7 +157,20 @@ async def create_answer(item: Item) -> dict:
     print("src_lang ========> ", item.src_lang)
     print("tgt_lang ========> ", item.tgt_lang)
     print("max_history ========> ", item.max_history)
+
+    sample_rate, audio_data = None, []
     
+    if not item.question and item.audio_data:
+        if stt.is_ready():
+            question, src_lang = stt.transcribe(item.audio_data, item.sample_rate, item.src_lang, item.tgt_lang)
+            item.question = question
+            item.src_lang = src_lang
+        else:
+            success, error = False, "STT Service is not ready"
+            t_end = time.time()
+            
+            return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+        
     if translator.is_ready():
         if item.src_lang == "sing":
             question = convert_first_letter(item.question)
@@ -165,47 +185,54 @@ async def create_answer(item: Item) -> dict:
         success, error = False, "Translator is not ready"
         t_end = time.time()
         
-        return {"answer": "", "si_answer": "", "success": success, "error": error, "time_taken": (t_end - t_start)}
+        return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
         
     print(f"En query: {user_ip_en}")
     
     if graph_app.is_ready():
-        answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
-        # answer = await graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
+        en_answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
+        # en_answer = await graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
         try:
-            answer = json.loads(answer)["answer"]
+            en_answer = json.loads(en_answer)["answer"]
         except Exception:
             ...
     else:
         success, error = False, "Bot is not ready"
         t_end = time.time()
         
-        return {"answer": "", "si_answer": "", "success": success, "error": error, "time_taken": (t_end - t_start)}
+        return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
     
     if translator.is_ready():
         if item.tgt_lang == "si":
-            si_answer = translator.translate(answer, src_lang="en", tgt_lang="si")
-            # si_answer = await translator.translate(answer, src_lang="en", tgt_lang="si")
-            if "වාණිජ බැංකු" in si_answer:
-                si_answer = si_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
+            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si")
+            # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="si")
+            if "වාණිජ බැංකු" in final_answer:
+                final_answer = final_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
         elif item.tgt_lang == "sing":
-            si_answer = translator.translate(answer, src_lang="en", tgt_lang="sing")
-            # si_answer = await translator.translate(answer, src_lang="en", tgt_lang="sing")
-            if "waanija benku" in si_answer:
-                si_answer = si_answer.replace("waanija benku", "Commercial benku")
+            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="sing")
+            # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="sing")
+            if "waanija benku" in final_answer:
+                final_answer = final_answer.replace("waanija benku", "Commercial benku")
         else:
-            si_answer = answer
+            final_answer = en_answer
     else:
         success, error = False, "Translator is not ready"
+        
+        if item.audio_ouput and tts.is_ready():
+            sample_rate, audio_data = tts.synthesize(en_answer, "en")
+
         t_end = time.time()
         
-        return {"answer": answer, "si_answer": "", "success": success, "error": error, "time_taken": (t_end - t_start)}
+        return {"en_answer": en_answer, "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
     
-    print(f"En answer: {answer}")
-    print(f"Tgt lang answer: {si_answer}")
+    if item.audio_ouput and tts.is_ready():
+        sample_rate, audio_data = tts.synthesize(final_answer, item.tgt_lang)
+    
+    print(f"En answer: {en_answer}")
+    print(f"Tgt lang answer: {final_answer}")
     t_end = time.time()
     
-    return {"answer": answer, "si_answer": si_answer, "success": True, "error": "", "time_taken": (t_end - t_start)}
+    return {"answer": en_answer, "answer": final_answer, "success": True, "error": "", "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
 
 @app.post("/clear_history")
 async def clear_history(session_hash: str=Body(embed=True)) -> JSONResponse:
