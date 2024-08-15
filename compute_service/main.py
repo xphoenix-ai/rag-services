@@ -291,11 +291,23 @@ async def status() -> JSONResponse:
     except:
       translator_status = False
 
+    try:
+      stt_status = stt.is_ready()
+    except:
+      stt_status = False
+
+    try:
+      tts_status = tts.is_ready()
+    except:
+      tts_status = False
+
     json_obj = {
         "llm": llm_status,
         "encoder": encoder_status,
         "translator": translator_status,
-        "status": llm_status and encoder_status and translator_status 
+        "stt": stt_status,
+        "tts": tts_status,
+        "status": llm_status and encoder_status and translator_status and stt_status and tts_status
     }
     
     return JSONResponse(json_obj)
