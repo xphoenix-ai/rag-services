@@ -1,5 +1,6 @@
 hf:
   model_config:
+    language: "en"
     # model_path: "openai/whisper-small"
     model_path: "openai/whisper-base"
     # model_path: "openai/whisper-large-v3"
@@ -10,6 +11,7 @@ hf:
 
 whisper:
   model_config:
+    language: "en"
     # model_path: "small"
     model_path: "base"
     # model_path: "large-v3"

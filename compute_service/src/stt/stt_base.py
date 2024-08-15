@@ -1,14 +1,15 @@
 import threading
 import numpy as np
+from typing import Tuple
 from abc import ABC, abstractmethod
-from typing import Callable, List, Dict, Union, Any
 
 
 class STTBase(ABC):
     """base class for stt
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, language, *args, **kwargs):
         self.model = None
+        self.language = language
         self.init(*args, **kwargs)
         
     def init(self, *args, **kwargs) -> None:
@@ -25,14 +26,14 @@ class STTBase(ABC):
         raise NotImplementedError
                 
     @abstractmethod
-    def transcribe(self, audio_array: np.ndarray, **generation_config: dict) -> str:
+    def transcribe(self, audio_array: np.ndarray, **generation_config: dict) -> Tuple[str, str]:
         """Transcribes the given audio data
 
         Args:
             audio_array (np.ndarray): The audio data to be transcribed
 
         Returns:
-            str: The transcribed text
+            Tuple[str, str]: The transcribed text and the language
         """
         raise NotImplementedError
     

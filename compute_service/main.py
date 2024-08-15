@@ -117,6 +117,7 @@ class LLMOutput(BaseModel):
 
 class STTOutput(BaseModel):
     transcription: str
+    language: str
     modified_time: Optional[datetime]
     time_taken: Optional[float]
     error: Optional[str]
@@ -234,12 +235,13 @@ async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(em
 
     audio_array = np.array(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
     generation_config = stt_config.get("generation_config", {})
-    transcription = stt.transcribe(audio_array, **generation_config)
+    transcription, language = stt.transcribe(audio_array, **generation_config)
     error = ""
     
     t_end = time.time()
     res_obj = STTOutput(
         transcription = transcription,
+        language = language,
         modified_time = datetime.now(pytz.UTC),
         time_taken = (t_end - t_start),
         error = error
@@ -249,7 +251,7 @@ async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(em
     return JSONResponse(json_obj)
 
 @app.post("/synthesize")
-async def synthesize(text: str=Body(embed=True)) -> JSONResponse:
+async def synthesize(text: str=Body(embed=True), language: str=Body(embed=True, default="en")) -> JSONResponse:
     t_start = time.time()
 
     generation_config = tts_config.get("generation_config", {})
