@@ -4,6 +4,7 @@ import pytz
 import time
 import ngrok
 import uvicorn
+import numpy as np
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi import FastAPI, Body
@@ -15,9 +16,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.config_reader import get_config
 from utils.get_module_by_name import get_module
-# from src.llm.hf.llm import LLM
-# from src.encoder.st.encoder import Encoder
-# from src.translator.nllb.translator import Translator
+
+from src.llm.llm_base import LLMBase
+from src.stt.stt_base import STTBase
+from src.tts.tts_base import TTSBase
+from src.encoder.encoder_base import EncoderBase
+from src.translator.nllb.translator import TranslatorBase
 
 
 load_dotenv()
@@ -25,6 +29,8 @@ load_dotenv()
 llm_class = os.getenv('LLM_CLASS', 'hf')
 encoder_class = os.getenv('ENCODER_CLASS', 'st')
 translator_class = os.getenv('TRANSLATOR_CLASS', 'nllb')
+stt_class = os.getenv('STT_CLASS', 'whisper')
+tts_class = os.getenv('TTS_CLASS', 'coqui')
 
 llm_config = get_config("llm_config.yml")[llm_class]
 print(f"LLM Config: {llm_config}")
@@ -35,15 +41,25 @@ print(f"Translator Config: {translator_config}")
 encoder_config = get_config("encoder_config.yml")[encoder_class]
 print(f"Encoder Config: {encoder_config}")
 
+stt_config = get_config("stt_config.yml")[stt_class]
+print(f"STT Config: {stt_config}")
+
+tts_config = get_config("tts_config.yml")[tts_class]
+print(f"TTS Config: {tts_config}")
+
 LLM = get_module(f"src.llm.{llm_class}.llm", "LLM")
 Translator = get_module(f"src.translator.{translator_class}.translator", "Translator")
 Encoder = get_module(f"src.encoder.{encoder_class}.encoder", "Encoder")
+STT = get_module(f"src.stt.{stt_class}.stt", "STT")
+TTS = get_module(f"src.tts.{tts_class}.tts", "TTS")
 
 app = FastAPI()
 
-llm = LLM(**llm_config["model_config"])
-translator = Translator(**translator_config["model_config"])
-encoder = Encoder(**encoder_config["model_config"])
+llm: LLMBase = LLM(**llm_config["model_config"])
+translator: TranslatorBase = Translator(**translator_config["model_config"])
+encoder: EncoderBase = Encoder(**encoder_config["model_config"])
+stt: STTBase  = STT(**stt_config["model_config"])
+tts: TTSBase = TTS(**tts_config["model_config"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -94,6 +110,22 @@ class EmbdOutput(BaseModel):
 class LLMOutput(BaseModel):
     prompt: str
     response: str
+    modified_time: Optional[datetime]
+    time_taken: Optional[float]
+    error: Optional[str]
+
+
+class STTOutput(BaseModel):
+    transcription: str
+    modified_time: Optional[datetime]
+    time_taken: Optional[float]
+    error: Optional[str]
+
+
+class TTSOutput(BaseModel):
+    audio_response: list
+    sample_rate: int
+    input_text: str
     modified_time: Optional[datetime]
     time_taken: Optional[float]
     error: Optional[str]
@@ -188,6 +220,47 @@ async def generate(
     res_obj = LLMOutput(
         prompt = prompt,
         response = response,
+        modified_time = datetime.now(pytz.UTC),
+        time_taken = (t_end - t_start),
+        error = error
+    )
+    json_obj = jsonable_encoder(res_obj)
+    
+    return JSONResponse(json_obj)
+
+@app.post("/transcribe")
+async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(embed=True, default=16_000)) -> JSONResponse:
+    t_start = time.time()
+
+    audio_array = np.array(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+    generation_config = stt_config.get("generation_config", {})
+    transcription = stt.transcribe(audio_array, **generation_config)
+    error = ""
+    
+    t_end = time.time()
+    res_obj = STTOutput(
+        transcription = transcription,
+        modified_time = datetime.now(pytz.UTC),
+        time_taken = (t_end - t_start),
+        error = error
+    )
+    json_obj = jsonable_encoder(res_obj)
+    
+    return JSONResponse(json_obj)
+
+@app.post("/synthesize")
+async def synthesize(text: str=Body(embed=True)) -> JSONResponse:
+    t_start = time.time()
+
+    generation_config = tts_config.get("generation_config", {})
+    sample_rate, audio_response = tts.synthesize(text, **generation_config)
+    error = ""
+    
+    t_end = time.time()
+    res_obj = TTSOutput(
+        audio_response = audio_response.tolist(),
+        sample_rate = sample_rate,
+        input_text = text,
         modified_time = datetime.now(pytz.UTC),
         time_taken = (t_end - t_start),
         error = error
