@@ -52,7 +52,7 @@ class TTSBase(ABC):
         silence = np.zeros(int(0.25 * self.model.generation_config.sample_rate))
 
         for sent in sentences:
-            sample_rate, audio_array = self.synthesize(sent, **generation_config)
+            sample_rate, audio_array = self.synthesize_one(sent, **generation_config)
             pieces += [audio_array, silence.copy()]
 
         return sample_rate, np.concatenate(pieces)
