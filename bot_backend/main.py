@@ -53,6 +53,7 @@ class Item(BaseModel):
     audio_ouput: Optional[bool] = False
     max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
+    free_chat_mode: Optional[bool] = False
 
 
 def convert_first_letter(sentence):
@@ -190,7 +191,7 @@ async def create_answer(item: Item) -> dict:
     print(f"En query: {user_ip_en}")
     
     if graph_app.is_ready():
-        en_answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
+        en_answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path, free_chat_mode=item.free_chat_mode)['messages'][-1]
         # en_answer = await graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
         try:
             en_answer = json.loads(en_answer)["answer"]
