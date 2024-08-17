@@ -21,6 +21,8 @@ class TTS(TTSBase):
             token=os.getenv("HF_TOKEN"),
             model_kwargs=model_kwargs
         )
+        self.sr = self.model.model.generation_config.sample_rate
+        print("[INFO] TTS service started...")
 
     def synthesize_one(self, text: str, **generation_config: dict) -> Tuple[int, np.ndarray]:
         speech = self.model(text, **generation_config)
