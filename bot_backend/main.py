@@ -170,7 +170,7 @@ async def create_answer(item: Item) -> dict:
             success, error = False, "STT Service is not ready"
             t_end = time.time()
             
-            return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+            return {"user_query": "", "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
         
     if translator.is_ready():
         if item.src_lang == "sing":
@@ -186,7 +186,7 @@ async def create_answer(item: Item) -> dict:
         success, error = False, "Translator is not ready"
         t_end = time.time()
         
-        return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+        return {"user_query": item.question, "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
         
     print(f"En query: {user_ip_en}")
     
@@ -201,7 +201,7 @@ async def create_answer(item: Item) -> dict:
         success, error = False, "Bot is not ready"
         t_end = time.time()
         
-        return {"en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+        return {"user_query": item.question, "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
     if translator.is_ready():
         if item.tgt_lang == "si":
@@ -224,16 +224,17 @@ async def create_answer(item: Item) -> dict:
 
         t_end = time.time()
         
-        return {"en_answer": en_answer, "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+        return {"user_query": item.question, "en_answer": en_answer, "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
     if item.audio_ouput and tts.is_ready():
-        sample_rate, audio_data = tts.synthesize(final_answer, item.tgt_lang)
+        # TODO: tts only supports for English at the moment
+        sample_rate, audio_data = tts.synthesize(en_answer, "en")
     
     print(f"En answer: {en_answer}")
     print(f"Tgt lang answer: {final_answer}")
     t_end = time.time()
     
-    return {"answer": en_answer, "answer": final_answer, "success": True, "error": "", "time_taken": (t_end - t_start), "sample_rate": sample_rate, audio_data: audio_data}
+    return {"user_query": item.question, "en_answer": en_answer, "answer": final_answer, "success": True, "error": "", "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
 
 @app.post("/clear_history")
 async def clear_history(session_hash: str=Body(embed=True)) -> JSONResponse:

@@ -21,6 +21,7 @@ class STT(STTBase):
             token=os.getenv("HF_TOKEN"),
             model_kwargs=model_kwargs
         )
+        print("[INFO] STT service started...")
 
     def transcribe(self, audio_array: np.ndarray, **generation_config: dict) -> str:
         transcription = self.model(audio_array, **generation_config)
