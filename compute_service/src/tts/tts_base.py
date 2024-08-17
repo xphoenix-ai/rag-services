@@ -49,7 +49,7 @@ class TTSBase(ABC):
         """
         pieces = []
         sentences = nltk.sent_tokenize(text)
-        silence = np.zeros(int(0.25 * self.model.generation_config.sample_rate))
+        silence = np.zeros(int(0.25 * self.sr))
 
         for sent in sentences:
             sample_rate, audio_array = self.synthesize_one(sent, **generation_config)
