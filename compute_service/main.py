@@ -56,10 +56,10 @@ TTS = get_module(f"src.tts.{tts_class}.tts", "TTS")
 app = FastAPI()
 
 llm: LLMBase = LLM(**llm_config["model_config"])
-translator: TranslatorBase = Translator(**translator_config["model_config"])
-encoder: EncoderBase = Encoder(**encoder_config["model_config"])
 stt: STTBase  = STT(**stt_config["model_config"])
 tts: TTSBase = TTS(**tts_config["model_config"])
+encoder: EncoderBase = Encoder(**encoder_config["model_config"])
+translator: TranslatorBase = Translator(**translator_config["model_config"])
 
 app.add_middleware(
     CORSMiddleware,
