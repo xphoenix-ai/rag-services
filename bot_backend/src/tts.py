@@ -8,7 +8,7 @@ class TTS:
     def __init__(self):
         self.url = os.getenv("TTS_URL")
         
-    def synthesize(self, text: str, language: str=None) -> Tuple[int, np.ndarray]:
+    def synthesize(self, text: str, language: str=None) -> Tuple[int, list]:
         json_body = {
             "text": text,
             "language": language
@@ -16,7 +16,7 @@ class TTS:
         response = requests.post(self.url, json=json_body)
         response = response.json()
 
-        audio_array = np.array(response["audio_response"])
+        audio_array = response["audio_response"]
         sample_rate = response["sample_rate"]
         
         return sample_rate, audio_array
