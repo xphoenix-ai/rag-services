@@ -250,7 +250,7 @@ class GraphApp:
         
         return {"messages": [answer], "session_id": session_id}
 
-    def __do_rag_standalone(self, en_query, session_id) -> dict:
+    def __do_rag_standalone(self, en_query, session_id, trace_lf=None) -> dict:
         if session_id not in self.chat_history:
             # self.chat_history[session_id] = []
             self.chat_history[session_id] = {"updated_time": time.time(), "chat": []}
@@ -259,6 +259,13 @@ class GraphApp:
         # result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]})
         result = self.rag_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]["chat"]})
         print(f">>> RAG result: {result}")
+        
+        if trace_lf is not None:
+            span = trace_lf.span(
+                name = "rag_outputs",
+                input = en_query,
+                output = result['context']) 
+          
         full_answer = result['answer']
         answer = full_answer.rsplit("### Response", 1)[-1].strip()
 
@@ -363,7 +370,7 @@ class GraphApp:
             print(f"[INFO] Adding RAG chain from {db_path}...")
             self.rag_chain_dict[key] = self.__build_rag_chain(db_path)
     
-    def chat(self, en_query, session_id, context_only=False, max_history=None, db_path=None, free_chat_mode=False):
+    def chat(self, en_query, session_id, context_only=False, max_history=None, db_path=None, free_chat_mode=False, trace_lf=None):
         if max_history is not None:
             self.max_history = max_history
             
@@ -376,7 +383,7 @@ class GraphApp:
             self.rag_chain = self.__get_rag_chain(db_path=db_path)
             
             if context_only:
-                answer = self.__do_rag_standalone(en_query, session_id)
+                answer = self.__do_rag_standalone(en_query, session_id, trace_lf)
             else:
                 inputs = {"messages": [en_query], "session_id": session_id}
                 answer = self.app.invoke(inputs)

@@ -4,11 +4,20 @@ import bs4
 import time
 import requests
 import pandas as pd
+from io import StringIO
 import urllib.parse as urlparse
 from langchain.schema.document import Document
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader, RecursiveUrlLoader, Docx2txtLoader, CSVLoader
+
+from unstructured_client import UnstructuredClient
+from unstructured_client.models import shared
+from unstructured_client.models.errors import SDKError
+from unstructured.partition.html import partition_html
+from unstructured.partition.pdf import partition_pdf
+from unstructured.staging.base import dict_to_elements, elements_to_json
+from unstructured_client.utils import BackoffStrategy, RetryConfig
 
 from src.encoder import DocEmbeddings
 
@@ -24,6 +33,23 @@ class VectorDB:
         self.r_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
         self.bs4_strainer = bs4.SoupStrainer() #class_=bs_classes)
         self.re_multiline = re.compile('\n+')
+
+        self.pdf_loader_type = os.getenv("PDF_LOADER")
+        self.api_key_auth = os.getenv("UNSTRUCTURED_API_KEY")
+        self.unstructured_server_url = os.getenv("UNSTRUCTURED_SERVER_URL")
+        # os.environ["DISABLE_NEST_ASYNCIO"] = "True"
+        
+        self.uns_client = None
+        
+        if self.pdf_loader_type == "Unstructured":
+            if self.unstructured_server_url == "free-api":
+                self.uns_client = UnstructuredClient(
+                      api_key_auth= self.api_key_auth,
+                      server=self.unstructured_server_url)
+            else:
+                self.uns_client = UnstructuredClient(
+                      api_key_auth= self.api_key_auth,
+                      server_url=self.unstructured_server_url)           
         
         # if self.embeddings.is_ready():
         #     self.create_db()
@@ -92,6 +118,63 @@ class VectorDB:
         
         return new_docs
     
+    @staticmethod
+    def extract_pdf_elements(file_path, client):
+        with open(file_path, "rb") as f:
+            files=shared.Files(
+                content=f.read(),
+                file_name=file_path,
+            )
+
+        req = shared.PartitionParameters(
+            files=files,
+            strategy="hi_res",
+            hi_res_model_name="yolox",
+            skip_infer_table_types=[],
+            pdf_infer_table_structure=True,
+        )
+
+        try:
+            resp = client.general.partition(req)
+            time.sleep(10) 
+            elements = dict_to_elements(resp.elements)
+        except SDKError as e:
+            print(e)
+
+        return elements
+
+    @staticmethod
+    def get_table_html(table_element):
+        table_html = table_element.metadata.text_as_html
+        table_df = pd.read_html(StringIO(table_html))[0]
+
+        return table_html, table_df
+
+    @staticmethod
+    def extract_doc_from_elements(pdf_elements):
+        doclist = []
+        doc = ""
+        for row_idx in range(len(pdf_elements)):
+            element_type = pdf_elements[row_idx].category
+            element_content = pdf_elements[row_idx].text
+            element_metadata = pdf_elements[row_idx].metadata
+            next_element_type = pdf_elements[row_idx + 1].category if row_idx < len(pdf_elements) - 1 else 'None'
+            print(element_type)
+            if (element_type == 'Title' and doc != "" and next_element_type == 'NarrativeText'):
+                doclist.append(Document(page_content=doc))
+                doc = element_content + "\n\n"
+            elif (element_type == 'Title' and next_element_type == 'NarrativeText'):
+                doc = element_content + "\n\n"
+            elif (element_type == 'NarrativeText'):
+                doc = doc + "\n" + element_content
+            elif (element_type == 'Table'):
+                _, df = VectorDB.get_table_html(pdf_elements[row_idx])
+                df_string = df.to_json(orient = 'records')
+                df_string = re.findall(r'\{(.*?)\}', df_string, re.DOTALL)
+                doc = "\n".join(df_string)                
+                #doc = doc + "\n" + str([ {f'row{index + 1}': row.to_dict()} for index, row in df.iterrows()])
+        return doclist
+    
     def __csv_processor(self, filepath, csv_args={"delimiter": ","}):
         loader = CSVLoader(filepath, csv_args=csv_args)
         docs = loader.load()
@@ -114,9 +197,13 @@ class VectorDB:
     
     def __pdf_processor(self, filepath):
         print(f"[INFO] Processing {filepath}...")
-        loader = PyPDFLoader(filepath)
-        docs = loader.load()
         
+        if (self.pdf_loader_type == "PyPDF"):        
+            loader = PyPDFLoader(filepath)
+            docs = loader.load()
+        elif (self.pdf_loader_type == "Unstructured"):
+            pdf_elements = VectorDB.extract_pdf_elements(filepath, self.uns_client)
+            docs = VectorDB.extract_doc_from_elements(pdf_elements)
         return docs
     
     def __url_processor_1(self, url, max_depth=1):

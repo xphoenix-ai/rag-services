@@ -17,6 +17,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Body
 
+
+from langfuse import Langfuse
+
 from src.stt import STT
 from src.tts import TTS
 from src.db import VectorDB
@@ -33,6 +36,20 @@ graph_app = GraphApp()
 translator = Translator()
 stt = STT()
 tts = TTS()
+
+
+tracing_enabled = os.getenv("TRACING_ENABLED")
+langfuse_secret_key = os.getenv("LANGFUSE_SECRET_KEY")
+langfuse_public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
+langfuse_host = os.getenv("LANGFUSE_HOST")
+
+if tracing_enabled:
+    langfuse = Langfuse(
+      secret_key=langfuse_secret_key,
+      public_key=langfuse_public_key,
+      host=langfuse_host
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -158,6 +175,19 @@ async def create_answer(item: Item) -> dict:
     print("src_lang ========> ", item.src_lang)
     print("tgt_lang ========> ", item.tgt_lang)
     print("max_history ========> ", item.max_history)
+    
+    if tracing_enabled:
+        trace = langfuse.trace(
+          name = "Combank-bot-trace",
+          session_id = item.session_hash,
+          metadata = {
+              "email": "user@langfuse.com",
+          },
+          tags = ["production"],
+          input = item.question,
+        )
+    else:
+        trace = None
 
     sample_rate, audio_data = None, []
     
@@ -191,7 +221,14 @@ async def create_answer(item: Item) -> dict:
     print(f"En query: {user_ip_en}")
     
     if graph_app.is_ready():
-        en_answer = graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path, free_chat_mode=item.free_chat_mode)['messages'][-1]
+        en_answer = graph_app.chat(user_ip_en, 
+                                   session_id=item.session_hash, 
+                                   context_only=item.context_only, 
+                                   max_history=item.max_history, 
+                                   db_path=item.db_path, 
+                                   free_chat_mode=item.free_chat_mode,
+                                   trace_lf = trace
+                                   )['messages'][-1]
         # en_answer = await graph_app.chat(user_ip_en, session_id=item.session_hash, context_only=item.context_only, max_history=item.max_history, db_path=item.db_path)['messages'][-1]
         try:
             en_answer = json.loads(en_answer)["answer"]
@@ -233,6 +270,9 @@ async def create_answer(item: Item) -> dict:
     print(f"En answer: {en_answer}")
     print(f"Tgt lang answer: {final_answer}")
     t_end = time.time()
+    
+    if tracing_enabled:
+        trace.update(output = en_answer)
     
     return {"user_query": item.question, "en_answer": en_answer, "answer": final_answer, "success": True, "error": "", "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
 
