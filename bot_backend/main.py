@@ -176,19 +176,6 @@ async def create_answer(item: Item) -> dict:
     print("tgt_lang ========> ", item.tgt_lang)
     print("max_history ========> ", item.max_history)
     
-    if tracing_enabled:
-        trace = langfuse.trace(
-          name = "Combank-bot-trace",
-          session_id = item.session_hash,
-          metadata = {
-              "email": "user@langfuse.com",
-          },
-          tags = ["production"],
-          input = item.question,
-        )
-    else:
-        trace = None
-
     sample_rate, audio_data = None, []
     
     if not item.question and item.audio_data:
@@ -201,7 +188,19 @@ async def create_answer(item: Item) -> dict:
             t_end = time.time()
             
             return {"user_query": "", "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
-        
+     
+    if tracing_enabled:
+        trace = langfuse.trace(
+          name = "Combank-bot-trace",
+          session_id = item.session_hash,
+          metadata = {
+          },
+          tags = ["production"],
+          input = item.question,
+        )
+    else:
+        trace = None        
+             
     if translator.is_ready():
         if item.src_lang == "sing":
             question = convert_first_letter(item.question)
@@ -272,7 +271,7 @@ async def create_answer(item: Item) -> dict:
     t_end = time.time()
     
     if tracing_enabled:
-        trace.update(output = en_answer)
+        trace.update(output = final_answer)
     
     return {"user_query": item.question, "en_answer": en_answer, "answer": final_answer, "success": True, "error": "", "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
 
