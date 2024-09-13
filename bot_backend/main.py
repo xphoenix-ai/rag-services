@@ -67,10 +67,11 @@ class Item(BaseModel):
     src_lang: Optional[str]
     tgt_lang: Optional[str]
     context_only: Optional[bool] = True
-    audio_ouput: Optional[bool] = False
     max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
     free_chat_mode: Optional[bool] = False
+    enable_audio_input: Optional[bool] = False
+    enable_audio_output: Optional[bool] = False
 
 
 def convert_first_letter(sentence):
@@ -176,9 +177,10 @@ async def create_answer(item: Item) -> dict:
     print("tgt_lang ========> ", item.tgt_lang)
     print("max_history ========> ", item.max_history)
     
-    sample_rate, audio_data = None, []
+    # sample_rate, audio_data = None, []
+    sample_rate, audio_data = None, None
     
-    if not item.question and item.audio_data:
+    if item.enable_audio_input and not item.question and item.audio_data:
         if stt.is_ready():
             question, src_lang = stt.transcribe(item.audio_data, item.sample_rate, item.src_lang, item.tgt_lang)
             item.question = question
@@ -255,14 +257,14 @@ async def create_answer(item: Item) -> dict:
     else:
         success, error = False, "Translator is not ready"
         
-        if item.audio_ouput and tts.is_ready():
+        if item.enable_audio_output and tts.is_ready():
             sample_rate, audio_data = tts.synthesize(en_answer, "en")
 
         t_end = time.time()
         
         return {"user_query": item.question, "en_answer": en_answer, "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
-    if item.audio_ouput and tts.is_ready():
+    if item.enable_audio_output and tts.is_ready():
         # TODO: tts only supports for English at the moment
         sample_rate, audio_data = tts.synthesize(en_answer, "en")
     

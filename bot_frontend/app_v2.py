@@ -68,7 +68,7 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
                 history[-1][-1] += char
             yield history,''
             
-def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, request: gr.Request):
+def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, enable_audio_input: bool, enable_audio_output: bool, request: gr.Request):
     url = f"{URL}/answer"
  
     src_ = LANGUAGE_MAPPING[src_language]
@@ -90,8 +90,9 @@ def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src
         "sample_rate": sr,
         "src_lang": src_,
         "tgt_lang": tgt_,
-        "audio_ouput": True,
-        "free_chat_mode": free_chat_mode
+        "free_chat_mode": free_chat_mode,
+        "enable_audio_input": enable_audio_input,
+        "enable_audio_output": enable_audio_output
     }
     response = requests.post(url, json=data_dict)
     response_dict = json.loads(response.content)
@@ -105,7 +106,7 @@ def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src
     
     history.append((user_query, answer_txt))
     
-    return history, "", None, (sr, audio_response)
+    return history, "", None, (sr, audio_response) if enable_audio_output else None
  
 def upload_file(files):
  
@@ -137,7 +138,14 @@ def clear_history(history, request: gr.Request):
         gr.Warning("Failed to clear history.")
         # return history
         return ''
-
+    
+    
+def change_audio(enable_audio_checkbox):
+    if enable_audio_checkbox:
+        return gr.Audio(visible=True) #make it visible
+    else:
+        return gr.Audio(visible=False)
+ 
  
 with gr.Blocks() as demo:
     with gr.Tab("Chatbot"):
@@ -149,7 +157,10 @@ with gr.Blocks() as demo:
               tgt_language = gr.Dropdown(
                   ["Singlish", "Sinhala", "English"], label="Select Target Language", value="Singlish"
               )
-              free_chat_mode = gr.Checkbox(label="Free Chat Mode")
+              with gr.Column():
+                free_chat_mode = gr.Checkbox(label="Free Chat Mode")
+                enable_audio_input = gr.Checkbox(label="Enable Audio Input")
+                enable_audio_output = gr.Checkbox(label="Enable Audio Output")
       with gr.Column():
         with gr.Row():
             audio_input_block = gr.Audio(
@@ -161,7 +172,8 @@ with gr.Blocks() as demo:
                     show_controls=False,
                     sample_rate=16_000
                 ),
-                label="audio_input"
+                label="audio_input",
+                visible=False
             )
         with gr.Row():
             txt = gr.Textbox(
@@ -218,7 +230,7 @@ with gr.Blocks() as demo:
         queue=True
     ).success(
         fn=generate_audio_answer,
-        inputs = [chatbot, txt, audio_input_block, src_language, tgt_language, free_chat_mode],
+        inputs = [chatbot, txt, audio_input_block, src_language, tgt_language, free_chat_mode, enable_audio_input, enable_audio_output],
         outputs = [chatbot, txt, audio_input_block, audio_output_block]
     )
     
@@ -240,7 +252,9 @@ with gr.Blocks() as demo:
             inputs=[web_url],
             outputs=[web_url],
             queue=True)
-
+    
+    enable_audio_input.change(fn=change_audio, inputs=[enable_audio_input], outputs=[audio_input_block])
+    enable_audio_output.change(fn=change_audio, inputs=[enable_audio_output], outputs=[audio_output_block])
 
 demo.queue()
 # demo.launch(debug=True, server_port=8003)
