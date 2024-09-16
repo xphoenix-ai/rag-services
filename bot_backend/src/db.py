@@ -150,7 +150,7 @@ class VectorDB:
 
         return table_html, table_df
     
-    @staticmethod()
+    @staticmethod
     def extract_doc_from_elements(pdf_elements):
         doclist = []
         doc = ""
