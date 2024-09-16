@@ -149,8 +149,7 @@ class VectorDB:
         table_df = pd.read_html(StringIO(table_html))[0]
 
         return table_html, table_df
-
-    @staticmethod
+    
     def extract_doc_from_elements(pdf_elements):
         doclist = []
         doc = ""
@@ -159,22 +158,30 @@ class VectorDB:
             element_content = pdf_elements[row_idx].text
             element_metadata = pdf_elements[row_idx].metadata
             next_element_type = pdf_elements[row_idx + 1].category if row_idx < len(pdf_elements) - 1 else 'None'
-            print(element_type)
-            if (element_type == 'Title' and doc != "" and next_element_type == 'NarrativeText'):
+
+            if (element_type == 'Title' 
+                and next_element_type != 'Title'
+                and  doc != ""): # Don't add empty document
                 doclist.append(Document(page_content=doc))
-                doc = element_content + "\n\n"
-            elif (element_type == 'Title' and next_element_type == 'NarrativeText'):
-                doc = element_content + "\n\n"
-            elif (element_type == 'NarrativeText'):
-                doc = doc + "\n" + element_content
+                dashline = "-" * len(element_content)
+                doc = element_content + f"\n{dashline}" + "\n\n"
+            elif (element_type == 'Title'):
+                dashline = "-" * len(element_content)
+                doc = doc + element_content + f"\n{dashline}" + "\n\n"
+            elif (element_type == 'NarrativeText' 
+                  or element_type == 'UncategorizedText'
+                  or element_type == 'Image'):
+                doc = doc + "\n\n" + element_content
             elif (element_type == 'Table'):
                 _, df = VectorDB.get_table_html(pdf_elements[row_idx])
                 df_string = df.to_json(orient = 'records')
                 df_string = re.findall(r'\{(.*?)\}', df_string, re.DOTALL)
-                doc = "\n".join(df_string)                
-                #doc = doc + "\n" + str([ {f'row{index + 1}': row.to_dict()} for index, row in df.iterrows()])
+                table_str = "\n".join(df_string)  
+                doc = doc + "\n\n" + table_str              
+
+        doclist.append(Document(page_content=doc))
         return doclist
-    
+
     def __csv_processor(self, filepath, csv_args={"delimiter": ","}):
         loader = CSVLoader(filepath, csv_args=csv_args)
         docs = loader.load()
