@@ -44,7 +44,7 @@ class TranslatorBase(ABC):
     def sinhala_to_singlish(self, si_query: str) -> str:
         """si --> sing"""
         # si --> sing
-        sing_response = sinhala_to_singlish(si_query)
+        sing_response, _ = sinhala_to_singlish(si_query)
         
         return sing_response, ""
     
