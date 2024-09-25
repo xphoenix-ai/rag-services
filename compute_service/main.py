@@ -154,7 +154,7 @@ async def translate(tr_item: TrIntput) -> JSONResponse:
         res, int_res = translator.singlish_to_sinhala(src)
         # res = await translator.singlish_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "si":
-        res. int_res = translator.english_to_sinhala(src)
+        res, int_res = translator.english_to_sinhala(src)
         # res = await translator.english_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "sing":
         res, int_res = translator.english_to_singlish(src)
