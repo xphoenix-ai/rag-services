@@ -196,6 +196,8 @@ async def create_answer(item: Item) -> dict:
           name = "Combank-bot-trace",
           session_id = item.session_hash,
           metadata = {
+            'source language':item.src_lang,
+            'target language':item.tgt_lang
           },
           tags = ["production"],
           input = item.question,
@@ -243,12 +245,12 @@ async def create_answer(item: Item) -> dict:
     
     if translator.is_ready():
         if item.tgt_lang == "si":
-            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si")
+            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si", trace_lf=trace)
             # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="si")
             if "වාණිජ බැංකු" in final_answer:
                 final_answer = final_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
         elif item.tgt_lang == "sing":
-            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="sing")
+            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="sing", trace_lf=trace)
             # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="sing")
             if "waanija benku" in final_answer:
                 final_answer = final_answer.replace("waanija benku", "Commercial benku")

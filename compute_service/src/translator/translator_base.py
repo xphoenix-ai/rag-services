@@ -46,27 +46,27 @@ class TranslatorBase(ABC):
         # si --> sing
         sing_response = sinhala_to_singlish(si_query)
         
-        return sing_response
+        return sing_response, ""
     
     def singlish_to_english(self, sing_query: str) -> str:
         """sing --> en"""
         # sing --> si
-        si_response = self.singlish_to_sinhala(sing_query)
+        si_response, _ = self.singlish_to_sinhala(sing_query)
         
         # si --> en
-        en_response = self.sinhala_to_english(si_response)
+        en_response, _ = self.sinhala_to_english(si_response)
         
-        return en_response
+        return en_response, si_response
     
     def english_to_singlish(self, en_query: str) -> str:
         """sing --> en"""
         # en --> si
-        si_response = self.english_to_sinhala(en_query)
+        si_response, _ = self.english_to_sinhala(en_query)
         
         # si --> sing
-        sing_response = self.sinhala_to_singlish(si_response)
+        sing_response, _ = self.sinhala_to_singlish(si_response)
         
-        return sing_response
+        return sing_response, si_response
     
     def is_ready(self) -> bool:
         if (self.tr_model_singlish is not None) and (self.tr_model is not None):

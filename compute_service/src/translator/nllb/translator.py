@@ -73,18 +73,18 @@ class Translator(TranslatorBase):
         # sing --> si
         si_response = self.__translate(self.tr_model_singlish, self.tr_tokenizer_singlish, sing_query, "eng_Latn", "sin_Sinh", streamer=None)
 
-        return si_response
+        return si_response, ""
     
     def english_to_sinhala(self, en_query: str) -> str:
         """en --> si"""
         # en --> si
         si_response = self.__translate(self.tr_model, self.tr_tokenizer, en_query, "eng_Latn", "sin_Sinh", streamer=None, use_min_length=True)
         
-        return si_response
+        return si_response, ""
     
     def sinhala_to_english(self, si_query: str) -> str:
         """si --> en"""
         # si --> en
         en_response = self.__translate(self.tr_model, self.tr_tokenizer, si_query, "sin_Sinh", "eng_Latn", streamer=None, use_min_length=True)
         
-        return en_response
+        return en_response, ""

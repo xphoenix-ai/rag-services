@@ -27,7 +27,7 @@ def sinhala_to_singlish(text):
         elif grapheme_type == "glyph":
             singlish_text = singlish_text[:-1] + singlish_grapheme
         
-    return singlish_text
+    return singlish_text, ""
 
 
 __sinhala_lexical = {

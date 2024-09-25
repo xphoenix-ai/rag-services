@@ -76,15 +76,17 @@ class TrIntput(BaseModel):
     tgt_lang: str
     
 
+
 class TrOutput(BaseModel):
     src: str
     tgt: Optional[str]
+    intermediate_res: Optional[str]
     src_lang: str
     tgt_lang: str
     modified_time: Optional[datetime]
     time_taken: Optional[float]
     error: Optional[str]
-    
+        
     
 class EmbdIntput(BaseModel):
     sentences: list[str]
@@ -146,40 +148,45 @@ async def translate(tr_item: TrIntput) -> JSONResponse:
     error = ""
     
     if src_lang == "sing" and tgt_lang == "en":
-        res = translator.singlish_to_english(src)
+        res, int_res = translator.singlish_to_english(src)
         # res = await translator.singlish_to_english(src)
     elif src_lang == "sing" and tgt_lang == "si":
-        res = translator.singlish_to_sinhala(src)
+        res, int_res = translator.singlish_to_sinhala(src)
         # res = await translator.singlish_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "si":
-        res = translator.english_to_sinhala(src)
+        res. int_res = translator.english_to_sinhala(src)
         # res = await translator.english_to_sinhala(src)
     elif src_lang == "en" and tgt_lang == "sing":
-        res = translator.english_to_singlish(src)
+        res, int_res = translator.english_to_singlish(src)
         # res = await translator.english_to_singlish(src)
     elif src_lang == "si" and tgt_lang == "sing":
-        res = translator.sinhala_to_singlish(src)
+        res, int_res = translator.sinhala_to_singlish(src)
         # res = await translator.sinhala_to_singlish(src)
     elif src_lang == "si" and tgt_lang == "en":
-        res = translator.sinhala_to_english(src)
+        res, int_res = translator.sinhala_to_english(src)
         # res = await translator.sinhala_to_english(src)
     elif src_lang == tgt_lang:
         res = src
+        int_res = ""
     else:
         res = ""
+        int_res = ""
         error = f"Not supported language pair: {src_lang} and {tgt_lang}"
         # raise ValueError(f"Not supported language pair: {src_lang} and {tgt_lang}")
     
     t_end = time.time()
+    
     res_obj = TrOutput(
-        src = src,
-        tgt = res,
-        src_lang = src_lang,
-        tgt_lang = tgt_lang,
-        modified_time = datetime.now(pytz.UTC),
-        time_taken = (t_end - t_start),
-        error = error
+    src = src,
+    tgt = res,
+    intermediate_res = int_res,
+    src_lang = src_lang,
+    tgt_lang = tgt_lang,
+    modified_time = datetime.now(pytz.UTC),
+    time_taken = (t_end - t_start),
+    error = error
     )
+    
     json_obj = jsonable_encoder(res_obj)
     
     return JSONResponse(json_obj)
