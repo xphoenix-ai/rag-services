@@ -208,10 +208,10 @@ async def create_answer(item: Item) -> dict:
     if translator.is_ready():
         if item.src_lang == "sing":
             question = convert_first_letter(item.question)
-            user_ip_en = translator.translate(question, src_lang="sing", tgt_lang="en")
+            user_ip_en = translator.translate(question, src_lang="sing", tgt_lang="en", trace_lf=trace)
             # user_ip_en = await translator.translate(item.question, src_lang="sing", tgt_lang="en")
         elif item.src_lang == "si":
-            user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en")
+            user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en", trace_lf=trace)
             # user_ip_en = await translator.translate(item.question, src_lang="si", tgt_lang="en")
         else:
             user_ip_en = item.question
