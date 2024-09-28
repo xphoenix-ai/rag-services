@@ -171,7 +171,8 @@ class VectorDB:
                 doc = doc + element_content + f"\n{dashline}" + "\n\n"
             elif (element_type == 'NarrativeText' 
                   or element_type == 'UncategorizedText'
-                  or element_type == 'Image'):
+                  or element_type == 'Image'
+                  or element_type == 'FigureCaption'):
                 doc = doc + "\n\n" + element_content
             elif (element_type == 'Table'):
                 _, df = VectorDB.get_table_html(pdf_elements[row_idx])
