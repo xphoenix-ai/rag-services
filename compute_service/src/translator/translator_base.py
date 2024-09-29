@@ -83,8 +83,8 @@ class TranslatorBase(ABC):
 
     @staticmethod
     def postprocess(x: str) -> str:
-        x = x.replace(';;', '.')
         x = x.replace(';;;', '?')
+        x = x.replace(';;', '.')
         x = x.replace('^,', '!')
         return x
         
