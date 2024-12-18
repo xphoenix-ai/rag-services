@@ -193,7 +193,7 @@ async def create_answer(item: Item) -> dict:
      
     if tracing_enabled:
         trace = langfuse.trace(
-          name = "Combank-bot-trace",
+          name = "my-bot-trace",
           session_id = item.session_hash,
           metadata = {
             'source language':item.src_lang,
@@ -244,6 +244,7 @@ async def create_answer(item: Item) -> dict:
         return {"user_query": item.question, "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
     if translator.is_ready():
+        # TODO: get rid of the following rules
         if item.tgt_lang == "si":
             final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si", trace_lf=trace)
             # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="si")
