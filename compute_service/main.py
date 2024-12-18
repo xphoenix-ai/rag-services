@@ -21,7 +21,7 @@ from src.llm.llm_base import LLMBase
 from src.stt.stt_base import STTBase
 from src.tts.tts_base import TTSBase
 from src.encoder.encoder_base import EncoderBase
-from src.translator.nllb.translator import TranslatorBase
+from src.translator.translator_base import TranslatorBase
 
 
 load_dotenv()
@@ -331,5 +331,5 @@ if __name__ == "__main__":
 
         print(f"[INFO] Public URL for {port}: {listener.url()}")
             
-    uvicorn.run(app, host=host, port=port)
     print("[INFO] Compute Service started...")
+    uvicorn.run(app, host=host, port=port)
