@@ -120,7 +120,7 @@ You can access the services as follws
         - [ ] Openai
     - [ ] Translation Service
         - [x] Huggingface
-        - [] Google Translate API
+        - [ ] Google Translate API
     - [ ] ASR Service
         - [x] Huggingface
         - [x] Openai-whisper
@@ -131,3 +131,9 @@ You can access the services as follws
     - [x] Basic chat interface
     - [x] Add knowledge to RAG (i.e. File Upload, URL fetch)
     - [ ] Get rid of Gradio  
+
+## Contributors
+
+- Kasun Imesha Wickramasinghe: [iamkasunimesha@gmail.com](mailto:iamkasunimesha@gmail.com)
+- Sachin Madhushanka: [slsmadhushanka@gmail.com](mailto:slsmadhushanka@gmail.com)
+- Nipuna Solangaarachchi: [nipunasolangaarachchi@gmail.com](mailto:nipunasolangaarachchi@gmail.com)
