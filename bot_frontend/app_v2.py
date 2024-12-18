@@ -185,7 +185,7 @@ with gr.Blocks() as demo:
             clear_btn = gr.Button('clear')
             
         with gr.Row():          
-            chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/combank.jpg"])
+            chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/bot.png"])
         with gr.Row():
             audio_output_block = gr.Audio(autoplay=True, label="audio_output", visible=False)
        

@@ -98,7 +98,7 @@ with gr.Blocks() as demo:
               )
       with gr.Column():
           with gr.Row():          
-              chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/combank.jpg"])
+              chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/bot.png"])
           with gr.Row():
                 txt = gr.Textbox(
                             show_label=False,
