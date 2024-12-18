@@ -259,12 +259,3 @@ with gr.Blocks() as demo:
 demo.queue()
 # demo.launch(debug=True, server_port=8003)
 demo.launch(debug=True)
-
-# ngrok.set_auth_token("2i0ojfXL9dDFQZaLnQYEByfuzUL_6fqw9pkF2NTKos6hvgbhr")
-# ngrok.set_auth_token("2iZKHcWVWgZvPjIlcTzH8D2NteJ_2tEPydcco5cfZfjkkqJDT")
-# listener_1 = ngrok.forward(8001)
-# listener_2 = ngrok.forward(8002)
-# listener_3 = ngrok.forward(7860)
-# print(f"[INFO] Public URL for {8001}: {listener_1.url()}") 
-# print(f"[INFO] Public URL for {8002}: {listener_2.url()}") 
-# print(f"[INFO] Public URL for {7860}: {listener_3.url()}") 
