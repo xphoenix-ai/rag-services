@@ -137,6 +137,10 @@ You can access the services as follws
 
 ## Contributors
 
-- Kasun Imesha Wickramasinghe: [iamkasunimesha@gmail.com](mailto:iamkasunimesha@gmail.com)
-- Sachin Madhushanka: [slsmadhushanka@gmail.com](mailto:slsmadhushanka@gmail.com)
-- Nipuna Solangaarachchi: [nipunasolangaarachchi@gmail.com](mailto:nipunasolangaarachchi@gmail.com)
+- [Kasun Wickramasinghe](https://www.linkedin.com/in/kasun-wickramasinghe-7b746a152/)
+- [Sachin Siriwardhana](https://www.linkedin.com/in/sachinsiriwardhana/)
+- [Nipuna Solangaarachchi](https://www.linkedin.com/in/nipuna-solangaarachchi-00136b15b/)
+
+## Contact Us
+
+[xphoenixai@gmail.com](mailto:xphoenixai@gmail.com)
