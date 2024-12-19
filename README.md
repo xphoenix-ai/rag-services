@@ -130,7 +130,10 @@ You can access the services as follws
 - [ ] Complete Frontend APP
     - [x] Basic chat interface
     - [x] Add knowledge to RAG (i.e. File Upload, URL fetch)
-    - [ ] Get rid of Gradio  
+    - [ ] Get rid of Gradio
+- [ ] Update Docker Image
+- [ ] Generalize Multilingual Support
+- [ ] Voice Streaming Capability
 
 ## Contributors
 
