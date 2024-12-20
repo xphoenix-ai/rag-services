@@ -1,7 +1,7 @@
 nllb:
   model_config:
-    translator_path: 
-    translitarator_path: 
+    translator_path: facebook/nllb-200-distilled-600M
+    translitarator_path: facebook/nllb-200-distilled-600M
     torch_dtype: torch.float16
     low_cpu_mem_usage: True
     load_in_4bit: False
@@ -9,8 +9,8 @@ nllb:
 
 m2m100:
   model_config:
-    translator_path: 
-    translitarator_path: 
+    translator_path: facebook/m2m100_418M
+    translitarator_path: facebook/m2m100_418M
     torch_dtype: torch.float16
     low_cpu_mem_usage: True
     load_in_4bit: False
@@ -18,9 +18,9 @@ m2m100:
 
 marian_mt:
   model_config:
-    en_mul_translator_path: 
-    mul_en_translator_path: 
-    translitarator_path: 
+    en_mul_translator_path: Helsinki-NLP/opus-mt-en-mul
+    mul_en_translator_path: Helsinki-NLP/opus-mt-mul-en
+    translitarator_path: facebook/m2m100_418M
     torch_dtype: torch.float16
     low_cpu_mem_usage: True
     load_in_4bit: False
