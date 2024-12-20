@@ -11,13 +11,11 @@ from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader, RecursiveUrlLoader, Docx2txtLoader, CSVLoader
 
-from unstructured_client import UnstructuredClient
-from unstructured_client.models import shared
-from unstructured_client.models.errors import SDKError
-from unstructured.partition.html import partition_html
-from unstructured.partition.pdf import partition_pdf
-from unstructured.staging.base import dict_to_elements, elements_to_json
-from unstructured_client.utils import BackoffStrategy, RetryConfig
+if os.getenv("PDF_LOADER") == "Unstructured":
+    from unstructured_client import UnstructuredClient
+    from unstructured_client.models import shared
+    from unstructured_client.models.errors import SDKError
+    from unstructured.staging.base import dict_to_elements
 
 from src.encoder import DocEmbeddings
 
@@ -35,26 +33,21 @@ class VectorDB:
         self.re_multiline = re.compile('\n+')
 
         self.pdf_loader_type = os.getenv("PDF_LOADER")
-        self.api_key_auth = os.getenv("UNSTRUCTURED_API_KEY")
-        self.unstructured_server_url = os.getenv("UNSTRUCTURED_SERVER_URL")
-        # os.environ["DISABLE_NEST_ASYNCIO"] = "True"
-        
+
         self.uns_client = None
-        
+
         if self.pdf_loader_type == "Unstructured":
+            self.api_key_auth = os.getenv("UNSTRUCTURED_API_KEY")
+            self.unstructured_server_url = os.getenv("UNSTRUCTURED_SERVER_URL")
+
             if self.unstructured_server_url == "free-api":
                 self.uns_client = UnstructuredClient(
-                      api_key_auth= self.api_key_auth,
-                      server=self.unstructured_server_url)
+                    api_key_auth= self.api_key_auth,
+                    server=self.unstructured_server_url)
             else:
                 self.uns_client = UnstructuredClient(
-                      api_key_auth= self.api_key_auth,
-                      server_url=self.unstructured_server_url)           
-        
-        # if self.embeddings.is_ready():
-        #     self.create_db()
-        # else:
-        #     print("[INFO] Embedding service is not ready...")
+                    api_key_auth= self.api_key_auth,
+                    server_url=self.unstructured_server_url)
             
         while not self.embeddings.is_ready():
             print("[INFO] Embedding service is not ready...")
@@ -80,9 +73,6 @@ class VectorDB:
         # Extract all tables and convert them to DataFrame strings
         tables = soup.find_all('table')
         for table in tables:
-            # df = pd.read_html(str(table))[0]
-            # df_string = df.to_string(index=False)
-            
             df = pd.read_html(str(table))[0]
             df_string = df.to_json(orient = 'records')
             df_string = re.findall(r'\{(.*?)\}', df_string, re.DOTALL)
