@@ -1,4 +1,5 @@
 import os
+import time
 import json
 import ngrok
 import codecs
@@ -67,8 +68,20 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
             if history:
                 history[-1][-1] += char
             yield history,''
+
+def stream_answer(history):
+    global answer_txt
+    # answer = history[-1][-1]
+    history[-1][-1] = ''
+
+    for char in answer_txt:
+        time.sleep(0.01)
+        if history:
+            history[-1][-1] += char
+        yield history
             
 def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, enable_audio_input: bool, enable_audio_output: bool, request: gr.Request):
+    global answer_txt
     url = f"{URL}/answer"
  
     src_ = LANGUAGE_MAPPING[src_language]
@@ -104,10 +117,10 @@ def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src
     sr = response_dict['sample_rate']
     audio_response = np.array(response_dict['audio_data'])
     
-    history.append((user_query, answer_txt))
-    
+    history.append((user_query, ""))
+
     return history, "", None, (sr, audio_response) if enable_audio_output else None
- 
+
 def upload_file(files):
  
     url = f"{URL}/update_file"
@@ -146,7 +159,9 @@ def change_audio(enable_audio_checkbox):
     else:
         return gr.Audio(visible=False)
  
- 
+
+answer_txt = ""
+
 with gr.Blocks() as demo:
     with gr.Tab("Chatbot"):
       with gr.Column():
@@ -205,23 +220,8 @@ with gr.Blocks() as demo:
  
             with gr.Column():
                 url_submit_btn = gr.Button('Submit URL')
- 
-    # btn.upload(
-    #         fn=render_first,
-    #         inputs=[btn],
-    #         outputs=[chatbot],)
- 
+
     upload_button.upload(upload_file, upload_button, file_output)
- 
-    # submit_btn.click(
-    #     fn=add_text,
-    #     inputs=[chatbot, txt],
-    #     outputs=[chatbot, ],
-    #     queue=True).success(
-    #     fn=generate_answer,
-    #     inputs = [chatbot, txt, src_language, tgt_language],
-    #     outputs = [chatbot,txt]
-    # )
         
     submit_btn.click(
         fn=check_input,
@@ -232,14 +232,11 @@ with gr.Blocks() as demo:
         fn=generate_audio_answer,
         inputs = [chatbot, txt, audio_input_block, src_language, tgt_language, free_chat_mode, enable_audio_input, enable_audio_output],
         outputs = [chatbot, txt, audio_input_block, audio_output_block]
+    ).success(
+        fn=stream_answer,
+        inputs = [chatbot],
+        outputs = [chatbot]
     )
-    
-    # submit_btn.click(
-    #     fn=reverse_audio,
-    #     inputs=[audio_input_block],
-    #     outputs=[audio_output_block],
-    #     queue=True
-    # )    
 
     clear_btn.click(
         fn=clear_history,
