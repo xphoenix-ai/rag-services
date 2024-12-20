@@ -76,7 +76,7 @@ python app_v2.py
 ```
 
 
-## Dockerization (Not up to date)
+## Dockerization
 
 **Note: The docker file is not up to date**
 

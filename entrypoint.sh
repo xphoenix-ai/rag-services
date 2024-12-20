@@ -28,4 +28,4 @@ python main.py &
 
 echo "[DEBUG] Bot Frontend..."
 cd /rag_services/bot_frontend/
-python app_v1.py
+python app_v2.py
