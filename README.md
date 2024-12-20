@@ -110,23 +110,23 @@ You can access the services as follws
     - [ ] Further Improvements
 - [ ] Complete Compute Service
     - [ ] LLM Service
-        - [x] Huggingface
-        - [x] Ollama
-        - [x] Llama-cpp
-        - [ ] Openai
+        - [x] [Huggingface](https://huggingface.co/)
+        - [x] [Ollama](https://ollama.com/)
+        - [x] [Llama-cpp](https://github.com/ggerganov/llama.cpp)
+        - [ ] [Openai](https://openai.com/api/)
     - [ ] Embedding Service
         - [x] Huggingface
-        - [x] Sentence Transformers
+        - [x] [Sentence Transformers](https://sbert.net/)
         - [ ] Openai
     - [ ] Translation Service
         - [x] Huggingface
-        - [ ] Google Translate API
+        - [ ] [Google Translate API](https://cloud.google.com/translate/docs/reference/rest)
     - [ ] ASR Service
         - [x] Huggingface
-        - [x] Openai-whisper
+        - [x] [Openai-whisper](https://github.com/openai/whisper)
     - [ ] TTS Service
         - [x] Huggingface
-        - [x] CoquiTTS
+        - [x] [CoquiTTS](https://github.com/coqui-ai/TTS)
 - [ ] Complete Frontend APP
     - [x] Basic chat interface
     - [x] Add knowledge to RAG (i.e. File Upload, URL fetch)
