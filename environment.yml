@@ -352,7 +352,7 @@ dependencies:
       - numba==0.60.0
       - oauthlib==3.2.2
       - olefile==0.47
-      - ollama==0.3.1
+      - ollama==0.4.4
       - onnx==1.17.0
       - onnxruntime==1.20.1
       - openai-whisper==20231117
