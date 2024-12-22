@@ -79,8 +79,6 @@ python app_v2.py
 
 ## Dockerization
 
-**Note: The docker file is not up to date**
-
 The services can be containerized using the following steps.
 ### Build the Image:
 ```docker build -t rag_services .```
