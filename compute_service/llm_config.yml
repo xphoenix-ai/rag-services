@@ -32,7 +32,8 @@ llama_cpp:
 ollama:
   model_config:
     # model_path: llama3:instruct
-    model_path: phi3
+#    model_path: phi3
+    model_path: llama3.2:1b-instruct-q4_K_M
     keep_alive: 5m
     tokenize_with_chat_template: True
   generation_config:
