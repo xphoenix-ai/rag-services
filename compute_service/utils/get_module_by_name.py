@@ -7,5 +7,5 @@ def get_module(module_path, class_name):
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
     except Exception:
-        raise ModuleNotFoundError(f"Class '{class_name}' not found in module translator.{module_path}")
+        raise ModuleNotFoundError(f"Class '{class_name}' not found in module {module_path}")
     
