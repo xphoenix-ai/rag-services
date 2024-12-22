@@ -17,8 +17,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Body
 
-
 from langfuse import Langfuse
+
+load_dotenv()
 
 from src.stt import STT
 from src.tts import TTS
@@ -26,7 +27,6 @@ from src.db import VectorDB
 from src.graph_app import GraphApp
 from src.translator import Translator
 
-load_dotenv()
 
 os.makedirs(os.getenv("DB_BASE"), exist_ok=True)
 
@@ -204,8 +204,10 @@ async def create_answer(item: Item) -> dict:
         )
     else:
         trace = None        
-             
-    if translator.is_ready():
+    
+    if item.src_lang == "en":
+        user_ip_en = item.question
+    elif translator.is_ready():
         if item.src_lang == "sing":
             question = convert_first_letter(item.question)
             user_ip_en = translator.translate(question, src_lang="sing", tgt_lang="en", trace_lf=trace)
@@ -243,7 +245,9 @@ async def create_answer(item: Item) -> dict:
         
         return {"user_query": item.question, "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
-    if translator.is_ready():
+    if item.tgt_lang == "en":
+        final_answer = en_answer
+    elif translator.is_ready():
         # TODO: get rid of the following rules
         if item.tgt_lang == "si":
             final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si", trace_lf=trace)
