@@ -11,7 +11,11 @@
 ![Model](img/architecture.png)
 
 ## Demo Interface
-![Model](img/sample_chat.png)
+
+https://github.com/user-attachments/assets/d1adec77-adcc-4673-8a26-7ba39de648e0
+
+[//]: # (## Demo Interface)
+[//]: # (![Model]&#40;img/sample_chat.png&#41;)
 
 [**Watch our Demo Video**](https://drive.google.com/file/d/1yqi3q2ZIxqeI7gozgqBCAk5PSUeSyaBv/view?usp=sharing)
 
