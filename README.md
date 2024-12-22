@@ -61,7 +61,8 @@ python main.py
 
 2. Start the bot backend
 
-Check the .env file. Keep fields empty if a variable should be set as `False`. 
+- Check the .env file. Keep fields empty if a variable should be set as `False`.
+- For advanced PDF processing (i.e. table data extraction) we recommend to use [unstructured-API](https://github.com/Unstructured-IO/unstructured-api), i.e. PDF_LOADER="Unstructured" in .env (defaults to "PyPDF")
 ```
 conda activate rag_env
 cd bot_backend
