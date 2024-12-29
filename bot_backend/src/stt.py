@@ -1,12 +1,13 @@
 import os
 import requests
+from typing import Tuple
 
 
 class STT:
     def __init__(self):
         self.url = os.getenv("STT_URL")
         
-    def transcribe(self, audio_data: list, sample_rate: int, src_lang: str=None, tgt_lang: str=None) -> str:
+    def transcribe(self, audio_data: list, sample_rate: int, src_lang: str=None, tgt_lang: str=None) -> Tuple[str, str]:
         json_body = {
             "audio_data": audio_data,
             "sample_rate": sample_rate
