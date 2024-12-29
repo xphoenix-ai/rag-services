@@ -10,7 +10,8 @@ class STT:
     def transcribe(self, audio_data: list, sample_rate: int, src_lang: str=None, tgt_lang: str=None) -> Tuple[str, str]:
         json_body = {
             "audio_data": audio_data,
-            "sample_rate": sample_rate
+            "sample_rate": sample_rate,
+            "language": src_lang
         }
         response = requests.post(self.url, json=json_body)
         response = response.json()

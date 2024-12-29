@@ -237,12 +237,12 @@ async def generate(
     return JSONResponse(json_obj)
 
 @app.post("/transcribe")
-async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(embed=True, default=16_000)) -> JSONResponse:
+async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(embed=True, default=16_000), language: str=Body(embed=True)) -> JSONResponse:
     t_start = time.time()
 
     audio_array = np.array(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
     generation_config = stt_config.get("generation_config", {})
-    transcription, language = stt.transcribe(audio_array, sample_rate, **generation_config)
+    transcription, language = stt.transcribe(audio_array, sample_rate, language, **generation_config)
     error = ""
     
     t_end = time.time()

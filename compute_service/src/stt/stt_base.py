@@ -26,12 +26,13 @@ class STTBase(ABC):
         raise NotImplementedError
                 
     @abstractmethod
-    def transcribe(self, audio_array: np.ndarray, sample_rate:int, **generation_config: dict) -> Tuple[str, str]:
+    def transcribe(self, audio_array: np.ndarray, sample_rate:int, language: str, **generation_config: dict) -> Tuple[str, str]:
         """Transcribes the given audio data
 
         Args:
             audio_array (np.ndarray): The audio data to be transcribed
             sample_rate (int): Sample rate of audio_array
+            language (str): language of the audio
         Returns:
             Tuple[str, str]: The transcribed text and the language
         """

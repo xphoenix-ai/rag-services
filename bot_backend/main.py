@@ -185,6 +185,7 @@ async def create_answer(item: Item) -> dict:
             question, src_lang = stt.transcribe(item.audio_data, item.sample_rate, item.src_lang, item.tgt_lang)
             item.question = question
             item.src_lang = src_lang
+            print(f"Transcription: {question}")
         else:
             success, error = False, "STT Service is not ready"
             t_end = time.time()

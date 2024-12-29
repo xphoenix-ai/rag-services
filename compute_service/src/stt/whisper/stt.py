@@ -14,7 +14,7 @@ class STT(STTBase):
         self.model = whisper.load_model(model_path, device=device)
         print("[INFO] STT service started...")
 
-    def transcribe(self, audio_array: np.ndarray, sample_rate: int, **generation_config: dict) -> Tuple[str, str]:
-        transcription = self.model.transcribe(audio_array, language=self.language, **generation_config)
+    def transcribe(self, audio_array: np.ndarray, sample_rate: int, language: str, **generation_config: dict) -> Tuple[str, str]:
+        transcription = self.model.transcribe(audio_array, language=language, **generation_config)
         
-        return transcription["text"].strip(), self.language
+        return transcription["text"].strip(), language
