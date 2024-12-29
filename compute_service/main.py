@@ -242,7 +242,7 @@ async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(em
 
     audio_array = np.array(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
     generation_config = stt_config.get("generation_config", {})
-    transcription, language = stt.transcribe(audio_array, **generation_config)
+    transcription, language = stt.transcribe(audio_array, sample_rate, **generation_config)
     error = ""
     
     t_end = time.time()
