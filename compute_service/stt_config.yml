@@ -11,9 +11,11 @@ hf:
   generation_config:
     batch_size: 1
     generate_kwargs:
-      do_sample: True
-      top_k: 5
+#      do_sample: True
+#      top_k: 5
       num_return_sequences: 1
+      max_new_tokens: 225
+      return_timestamps: True
 
 whisper:
   model_config:

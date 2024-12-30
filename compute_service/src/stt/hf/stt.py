@@ -3,7 +3,7 @@ import torch
 import librosa
 import numpy as np
 from typing import Tuple
-from transformers import pipeline, WhisperConfig, WhisperProcessor, WhisperForConditionalGeneration
+from transformers import pipeline, WhisperConfig, WhisperProcessor, WhisperForConditionalGeneration, GenerationConfig
 
 from src.stt.stt_base import STTBase
 
@@ -41,10 +41,12 @@ class STT(STTBase):
             torch_dtype=torch_dtype,
             token=os.getenv("HF_TOKEN"),
             **model_kwargs
-        ).to(device)
+        )
         self.config = WhisperConfig.from_pretrained(base_model)
         self.hf_model.config = self.config
         self.processor = WhisperProcessor.from_pretrained(base_model, language=self.language)
+        self.base_generation_config = GenerationConfig.from_pretrained(base_model)
+        self.hf_model.generation_config = self.base_generation_config
         # self.forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=self.language, task="transcribe")
         self.bos_token_id = self.hf_model.config.decoder_start_token_id
         self.max_length = self.hf_model.config.max_length
@@ -58,6 +60,7 @@ class STT(STTBase):
             model=self.hf_model,
             tokenizer=self.processor.tokenizer,
             feature_extractor=self.processor.feature_extractor,
+            device=device
         )
         print("[INFO] STT service started...")
 
@@ -86,8 +89,8 @@ class STT(STTBase):
         generate_kwargs = generation_config.pop("generate_kwargs")
 
         forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=language, task="transcribe")
-
         generate_kwargs["forced_decoder_ids"] = forced_decoder_ids
+
         transcription = self.model(
             {"sampling_rate": 16_000, "raw": audio_array},
             **generation_config,
