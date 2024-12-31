@@ -69,8 +69,8 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
                 history[-1][-1] += char
             yield history,''
 
-def stream_answer(history):
-    global answer_txt
+def stream_answer(history, answer_txt):
+    # global answer_txt
     # answer = history[-1][-1]
     history[-1][-1] = ''
 
@@ -81,7 +81,7 @@ def stream_answer(history):
         yield history
             
 def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, enable_audio_input: bool, enable_audio_output: bool, request: gr.Request):
-    global answer_txt
+    # global answer_txt
     url = f"{URL}/answer"
  
     src_ = LANGUAGE_MAPPING[src_language]
@@ -119,7 +119,7 @@ def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src
     
     history.append((user_query, ""))
 
-    return history, "", None, (sr, audio_response) if enable_audio_output else None
+    return history, "", None, (sr, audio_response) if enable_audio_output else None, answer_txt
 
 def upload_file(files):
  
@@ -160,9 +160,11 @@ def change_audio(enable_audio_checkbox):
         return gr.Audio(visible=False)
  
 
-answer_txt = ""
+# answer_txt = ""
 
 with gr.Blocks() as demo:
+    answer_txt = gr.State([])
+    
     with gr.Tab("Chatbot"):
       with gr.Column():
           with gr.Row():  
@@ -231,10 +233,10 @@ with gr.Blocks() as demo:
     ).success(
         fn=generate_audio_answer,
         inputs = [chatbot, txt, audio_input_block, src_language, tgt_language, free_chat_mode, enable_audio_input, enable_audio_output],
-        outputs = [chatbot, txt, audio_input_block, audio_output_block]
+        outputs = [chatbot, txt, audio_input_block, audio_output_block, answer_txt]
     ).success(
         fn=stream_answer,
-        inputs = [chatbot],
+        inputs = [chatbot, answer_txt],
         outputs = [chatbot]
     )
 
