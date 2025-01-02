@@ -147,3 +147,14 @@ You can access the services as follws
 ## Contact Us
 
 [xphoenixai@gmail.com](mailto:xphoenixai@gmail.com)
+
+## Social Media
+
+Follow our social media channels for latest updates
+
+<a href="https://www.linkedin.com/company/xphoenix-ai">
+    <img src="img/Linkedin_icon.png" alt="Version" width="50" height="50">
+</a>
+<a href="https://web.facebook.com/profile.php?id=61571067352559">
+    <img src="img/Facebook_icon.png" alt="Version" width="50" height="50">
+</a>
