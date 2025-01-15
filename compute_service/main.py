@@ -158,41 +158,19 @@ async def translate(tr_item: TrIntput) -> JSONResponse:
     src_lang = tr_item.src_lang
     tgt_lang = tr_item.tgt_lang
     src = tr_item.src
-    error = ""
-    
-    if src_lang == "sing" and tgt_lang == "en":
-        res, int_res = translator.singlish_to_english(src)
-        # res = await translator.singlish_to_english(src)
-    elif src_lang == "sing" and tgt_lang == "si":
-        res, int_res = translator.singlish_to_sinhala(src)
-        # res = await translator.singlish_to_sinhala(src)
-    elif src_lang == "en" and tgt_lang == "si":
-        res, int_res = translator.english_to_sinhala(src)
-        # res = await translator.english_to_sinhala(src)
-    elif src_lang == "en" and tgt_lang == "sing":
-        res, int_res = translator.english_to_singlish(src)
-        # res = await translator.english_to_singlish(src)
-    elif src_lang == "si" and tgt_lang == "sing":
-        res, int_res = translator.sinhala_to_singlish(src)
-        # res = await translator.sinhala_to_singlish(src)
-    elif src_lang == "si" and tgt_lang == "en":
-        res, int_res = translator.sinhala_to_english(src)
-        # res = await translator.sinhala_to_english(src)
-    elif src_lang == tgt_lang:
-        res = src
-        int_res = ""
-    else:
+
+    try:
+        res, error = translator.translate(src, src_lang.lower(), tgt_lang.lower())
+    except Exception as e:
         res = ""
-        int_res = ""
-        error = f"Not supported language pair: {src_lang} and {tgt_lang}"
-        # raise ValueError(f"Not supported language pair: {src_lang} and {tgt_lang}")
-    
+        error = f"{e}"
+
     t_end = time.time()
     
     res_obj = TrOutput(
     src = src,
     tgt = res,
-    intermediate_res = int_res,
+    intermediate_res = "",
     src_lang = src_lang,
     tgt_lang = tgt_lang,
     modified_time = datetime.now(pytz.UTC),

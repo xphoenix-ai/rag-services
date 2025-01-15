@@ -14,23 +14,20 @@ class Translator(TranslatorBase):
         "sing": "eng"
     }
 
-    def __init__(self, en_mul_translator_path: str, mul_en_translator_path: str, translitarator_path: str, torch_dtype=torch.float16, low_cpu_mem_usage=True, load_in_4bit: bool=False, load_in_8bit: bool=False, device="cuda"):
+    def __init__(self, en_mul_translator_path: str, mul_en_translator_path: str, torch_dtype=torch.float16, low_cpu_mem_usage=True, load_in_4bit: bool=False, load_in_8bit: bool=False, device="cuda"):
         self.tr_model_en_mul = None
         self.tr_model_mul_en = None
         
         self.tr_tokenizer_en_mul= None
         self.tr_tokenizer_mul_en = None
-        self.tr_tokenizer_singlish = None
-        
+
         self.tr_streamer_en_mul = None
         self.tr_streamer_mul_en = None
-        self.tr_streamer_singlish = None
-        
+
         self.device = device if torch.cuda.is_available() else "cpu"
-        super().__init__(en_mul_translator_path, mul_en_translator_path, translitarator_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
+        super().__init__("marian_mt", en_mul_translator_path, mul_en_translator_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
         
     def _load_model(self, en_mul_translator_path: str, mul_en_translator_path: str, translitarator_path: str, torch_dtype, low_cpu_mem_usage: bool, load_in_4bit: bool, load_in_8bit: bool) -> None:
-        self.tr_tokenizer_singlish = AutoTokenizer.from_pretrained(translitarator_path, token=os.getenv("HF_TOKEN"))
         self.tr_tokenizer_en_mul = MarianTokenizer.from_pretrained(en_mul_translator_path, token=os.getenv("HF_TOKEN"))
         self.tr_tokenizer_mul_en = MarianTokenizer.from_pretrained(mul_en_translator_path, token=os.getenv("HF_TOKEN"))
         
@@ -43,45 +40,26 @@ class Translator(TranslatorBase):
             torch_dtype = torch.float32
             quantization_config = None
             
-        self.tr_model_singlish = AutoModelForSeq2SeqLM.from_pretrained(translitarator_path, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype, quantization_config=quantization_config, token=os.getenv("HF_TOKEN")).to(self.device)
-        # disk_offload(model=self.tr_model_singlish, offload_dir="tr_model_singlish")
         self.tr_model_en_mul = AutoModelForSeq2SeqLM.from_pretrained(en_mul_translator_path, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype, quantization_config=quantization_config, token=os.getenv("HF_TOKEN")).to(self.device)
-        # disk_offload(model=self.tr_model_en_mul, offload_dir="tr_model_en_mul")
         self.tr_model_mul_en = AutoModelForSeq2SeqLM.from_pretrained(mul_en_translator_path, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype, quantization_config=quantization_config, token=os.getenv("HF_TOKEN")).to(self.device)
-        # disk_offload(model=self.tr_model_mul_en, offload_dir="tr_model_mul_en")
 
-        self.tr_streamer_singlish = TextStreamer(self.tr_tokenizer_singlish, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_en_mul = TextStreamer(self.tr_tokenizer_en_mul, skip_prompt=True, skip_special_tokens=True)
         self.tr_streamer_mul_en = TextStreamer(self.tr_tokenizer_mul_en, skip_prompt=True, skip_special_tokens=True)
         print("[INFO] Translation service started...")
-        
-    def __translate(self, model, tokenizer, query: str, src_lang_code: str, tgt_lang_code: str, streamer=None, use_min_length: bool=False, is_translitarator: bool=False) -> str:
+
+    def __half_translate(self, model, tokenizer, query: str, src_lang_code: str, tgt_lang_code: str, streamer=None, use_min_length: bool=False) -> str:
+
         if use_min_length:
             query = self.preprocess(query)
-        
-        if is_translitarator:
-            tokenizer.src_lang = src_lang_code    
-        else:
-            if tgt_lang_code != "eng":
-                query = f">>{tgt_lang_code}<< {query}"
+
+        if tgt_lang_code != "eng":
+            query = f">>{tgt_lang_code}<< {query}"
             
         inputs = tokenizer(query, return_tensors="pt").to(model.device)
-        in_len = inputs.input_ids.shape[-1]
-        
-        # min_length = in_len if tgt_lang_code != "eng_Latn" else None
-        # min_length = in_len if use_min_length else None
-        min_length = None
-        
-        if is_translitarator:
-            translated_tokens = model.generate(
-                **inputs, forced_bos_token_id=tokenizer.encode(tgt_lang_code)[1], min_length=min_length,  max_length=3 * in_len, streamer=streamer, pad_token_id=tokenizer.eos_token_id,
-                # do_sample=True, temperature=0.1, top_p=0.95, top_k=20, repetition_penalty=1.0
-            )
-        else:
-            translated_tokens = model.generate(
-                **inputs, streamer=streamer,
-                # do_sample=True, temperature=0.1, top_p=0.95, top_k=20, repetition_penalty=1.0
-            )
+
+        translated_tokens = model.generate(
+            **inputs, streamer=streamer,
+        )
         torch.cuda.empty_cache()
         
         result = tokenizer.batch_decode(translated_tokens, skip_special_tokens=True)[0]
@@ -91,28 +69,29 @@ class Translator(TranslatorBase):
         
         return result
 
-    def singlish_to_sinhala(self, sing_query: str) -> str:
-        """sing --> si"""
-        # sing --> si
-        si_response = self.__translate(self.tr_model_singlish, self.tr_tokenizer_singlish, sing_query, "eng_Latn", "sin_Sinh", streamer=None, is_translitarator=True)
+    def translate(self, query: str, src_lang: str, tgt_lang: str, use_min_length: bool=False):
+        src_lang_code, src_lang_error = self.get_lang_code(src_lang)
+        tgt_lang_code, tgt_lang_error = self.get_lang_code(tgt_lang)
+        error = src_lang_error + tgt_lang_error
 
-        return si_response
-    
-    def english_to_sinhala(self, en_query: str) -> str:
-        """en --> si"""
-        # en --> si
-        si_response = self.__translate(self.tr_model_en_mul, self.tr_tokenizer_en_mul, en_query, "eng", "sin", streamer=None, use_min_length=True)
-        
-        return si_response
-    
-    def sinhala_to_english(self, si_query: str) -> str:
-        """si --> en"""
-        # si --> en
-        en_response = self.__translate(self.tr_model_mul_en, self.tr_tokenizer_mul_en, si_query, "sin", "eng", streamer=None, use_min_length=True)
-        
-        return en_response
-    
+        if error:
+            return "", error
+
+        if src_lang_code == tgt_lang_code:
+            return query, ""
+        elif src_lang_code ==  "eng":
+            res = self.__half_translate(self.tr_model_en_mul, self.tr_tokenizer_en_mul, query, "eng", tgt_lang_code, streamer=self.tr_streamer_en_mul, use_min_length=True)
+            return res, ""
+        else:  # src_lang_code != "eng"
+            inter_query = self.__half_translate(self.tr_model_mul_en, self.tr_tokenizer_mul_en, query, src_lang_code, "eng", streamer=self.tr_streamer_mul_en, use_min_length=True)
+
+            if tgt_lang_code == "eng":
+                return inter_query, ""
+            else:
+                res = self.__half_translate(self.tr_model_en_mul, self.tr_tokenizer_en_mul, inter_query, "eng", tgt_lang_code, streamer=self.tr_streamer_en_mul, use_min_length=True)
+                return res, ""
+
     def is_ready(self) -> bool:
-        if (self.tr_model_singlish is not None) and (self.tr_model_en_mul is not None) and (self.tr_model_mul_en is not None):
+        if (self.tr_model_en_mul is not None) and (self.tr_model_mul_en is not None):
             return True
         return False

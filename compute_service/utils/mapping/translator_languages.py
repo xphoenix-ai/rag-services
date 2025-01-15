@@ -252,6 +252,7 @@ MARIAN_MT_LANGUAGE_MAP_TRANSLATOR = {
     'Chechen': 'che',
     'Cherokee': 'chr',
     'Chuvash': 'chv',
+    'English': 'eng',
     'Jin Chinese (Simplified)': 'cjy_Hans',
     'Jin Chinese (Traditional)': 'cjy_Hant',
     'Mandarin Chinese': 'cmn',

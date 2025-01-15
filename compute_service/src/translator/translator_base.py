@@ -1,15 +1,16 @@
 import threading
 from abc import ABC, abstractmethod
-from typing import Callable, List, Dict, Union, Any
+from typing import Callable, Tuple, List, Dict, Union, Any
 
 from utils.unicode_converter import sinhala_to_singlish
+from utils.mapping.language_utils import get_language_code
 
 
 class TranslatorBase(ABC):
     """base class for translators
     """
-    def __init__(self, *args, **kwargs):
-        self.tr_model_singlish = None
+    def __init__(self, class_name, *args, **kwargs):
+        self.class_name = class_name
         self.tr_model = None
         self.init(*args, **kwargs)
         
@@ -27,52 +28,17 @@ class TranslatorBase(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def singlish_to_sinhala(self, sing_query: str) -> str:
-        """sing --> si"""
+    def translate(self, query: str, src_lang: str, tgt_lang: str, use_min_length: bool = False) -> Tuple[str, str]:
         raise NotImplementedError
-    
-    @abstractmethod
-    def english_to_sinhala(self, en_query: str) -> str:
-        """en --> si"""
-        raise NotImplementedError
-    
-    @abstractmethod
-    def sinhala_to_english(self, si_query: str) -> str:
-        """si --> en"""
-        raise NotImplementedError
-    
-    def sinhala_to_singlish(self, si_query: str) -> str:
-        """si --> sing"""
-        # si --> sing
-        sing_response, _ = sinhala_to_singlish(si_query)
-        
-        return sing_response, ""
-    
-    def singlish_to_english(self, sing_query: str) -> str:
-        """sing --> en"""
-        # sing --> si
-        si_response, _ = self.singlish_to_sinhala(sing_query)
-        
-        # si --> en
-        en_response, _ = self.sinhala_to_english(si_response)
-        
-        return en_response, si_response
-    
-    def english_to_singlish(self, en_query: str) -> str:
-        """sing --> en"""
-        # en --> si
-        si_response, _ = self.english_to_sinhala(en_query)
-        
-        # si --> sing
-        sing_response, _ = self.sinhala_to_singlish(si_response)
-        
-        return sing_response, si_response
     
     def is_ready(self) -> bool:
-        if (self.tr_model_singlish is not None) and (self.tr_model is not None):
+        if self.tr_model is not None:
             return True
         return False
-    
+
+    def get_lang_code(self, lang_name):
+        return get_language_code("translator", self.class_name, lang_name)
+
     @staticmethod
     def preprocess(x: str) -> str:
         x, last = x[:-1], x[-1] 
