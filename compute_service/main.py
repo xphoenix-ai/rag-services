@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.config_reader import get_config
 from utils.get_module_by_name import get_module
+from utils.mapping.language_utils import get_language_maps
 
 from src.llm.llm_base import LLMBase
 from src.stt.stt_base import STTBase
@@ -60,6 +61,8 @@ stt: STTBase  = STT(**stt_config["model_config"])
 tts: TTSBase = TTS(**tts_config["model_config"])
 encoder: EncoderBase = Encoder(**encoder_config["model_config"])
 translator: TranslatorBase = Translator(**translator_config["model_config"])
+
+translator_language_map, stt_language_map, tts_language_map = get_language_maps(translator_class, stt_class, tts_class)
 
 app.add_middleware(
     CORSMiddleware,
@@ -137,6 +140,16 @@ class TTSOutput(BaseModel):
 @app.get("/")
 async def read_root() -> JSONResponse:
     return JSONResponse({"info": "Compute Service", "version": os.getenv("TR_VERSION"), "vendor": "XXX"})
+
+@app.get("/languages")
+async def get_supported_languages() -> JSONResponse:
+    
+    return JSONResponse({
+       "translator": sorted([l.lower() for l in translator_language_map.keys()]),
+       "stt": sorted([l.lower() for l in stt_language_map.keys()]),
+       "tts": sorted([l.lower() for l in tts_language_map.keys()]), 
+    })
+
 
 @app.post("/translate")
 async def translate(tr_item: TrIntput) -> JSONResponse:
