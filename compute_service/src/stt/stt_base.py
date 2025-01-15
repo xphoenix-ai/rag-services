@@ -3,12 +3,15 @@ import numpy as np
 from typing import Tuple
 from abc import ABC, abstractmethod
 
+from utils.mapping.language_utils import get_language_code
+
 
 class STTBase(ABC):
     """base class for stt
     """
-    def __init__(self, language, *args, **kwargs):
+    def __init__(self, class_name, language, *args, **kwargs):
         self.model = None
+        self.class_name = class_name
         self.language = language
         self.init(*args, **kwargs)
         
@@ -37,7 +40,10 @@ class STTBase(ABC):
             Tuple[str, str]: The transcribed text and the language
         """
         raise NotImplementedError
-    
+
+    def get_lang_code(self, lang_name):
+        return get_language_code("stt", self.class_name, lang_name)
+
     def is_ready(self) -> bool:
         if self.model is not None:
             return True

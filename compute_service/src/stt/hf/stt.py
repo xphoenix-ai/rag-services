@@ -12,7 +12,7 @@ class STT(STTBase):
     def __init__(self, language, model_path: str, device: str = "cpu", torch_dtype: torch.dtype = torch.float32,
                  **model_kwargs):
         self.model = None
-        super().__init__(language, model_path, device, torch_dtype, **model_kwargs)
+        super().__init__("hf", language, model_path, device, torch_dtype, **model_kwargs)
 
     def __get_base_model(self, model_name):
         if 'large-v3' in model_name:
@@ -88,7 +88,8 @@ class STT(STTBase):
 
         generate_kwargs = generation_config.pop("generate_kwargs")
 
-        forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=language, task="transcribe")
+        lang_code, lang_error = self.get_lang_code(language)
+        forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=lang_code, task="transcribe")
         generate_kwargs["forced_decoder_ids"] = forced_decoder_ids
 
         transcription = self.model(
