@@ -1,8 +1,8 @@
-# Rag Services
+# Rag Services - Any Language
 
  - An end-to-end RAG pipeline with both text and audio input-output support with fully customizable system architecture.
- - We have initially developed this to handle *Siglish* (i.e. Romanized Sinhala typing. Not Singaporean English) specially to handle casual day-today customer interactions.
- - This can be extended easily to any language pair as far as you have good enough models to perform the back and forth translation between English and the other language. 
+ - Supports cross lingual usage (any source language to any target language)
+ - Pluggable modular architecture for any LLM, ASR, TTS, Embedding and Translation technology 
 
 ## System Overview
 ![Model](img/overall_system.jpeg)
