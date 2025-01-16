@@ -6,8 +6,9 @@ from typing import Callable, List, Dict, Union, Any
 class EncoderBase(ABC):
     """base class for encoders
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, class_name, *args, **kwargs):
         self.model = None
+        self.class_name = class_name
         self.init(*args, **kwargs)
         
     def init(self, *args, **kwargs) -> None:

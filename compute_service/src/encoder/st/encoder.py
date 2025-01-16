@@ -7,7 +7,7 @@ from src.encoder.encoder_base import EncoderBase
 class Encoder(EncoderBase):
     def __init__(self, model_path, device="cuda"):
         self.device = device if torch.cuda.is_available() else "cpu"
-        super().__init__(model_path)
+        super().__init__("st", model_path)
         
     def _load_model(self, model_path):
         self.model = SentenceTransformer(model_path).to(self.device)
