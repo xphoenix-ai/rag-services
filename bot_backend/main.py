@@ -68,10 +68,10 @@ class Item(BaseModel):
     session_hash: str
     src_lang: Optional[str]
     tgt_lang: Optional[str]
-    context_only: Optional[bool] = True  # True: RAG, False: Just LLM chat (w/o RAG)
+    context_only: Optional[bool] = True  # True: simple llm, False: langgraph
     max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
-    free_chat_mode: Optional[bool] = False
+    free_chat_mode: Optional[bool] = False  # True: w/o RAG, False: RAG mode
     enable_audio_input: Optional[bool] = False
     enable_audio_output: Optional[bool] = False
 
