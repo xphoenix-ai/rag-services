@@ -296,10 +296,15 @@ class GraphApp:
         self.chat_history[session_id]["chat"].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
         self.chat_history[session_id]["updated_time"] = time.time()
 
-        return {"messages": [answer], "session_id": state["session_id"]}
+        return {"messages": [answer], "session_id": session_id}
     
     def __classifier(self, state: AgentState) -> dict:
         question = state["messages"][-1]
+        session_id = state["session_id"]
+
+        if session_id not in self.chat_history:
+            self.chat_history[session_id] = {"updated_time": time.time(), "chat": []}
+
         prompt = Template(self.classifier_prompt)
         prompt = prompt.substitute({"question": question})
         messages = [
@@ -315,13 +320,13 @@ class GraphApp:
             classifier_response = json.loads(response)
             
             if classifier_response["category"] == "do_answer":
-                # self.chat_history[state["session_id"]].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
-                self.chat_history[state["session_id"]]["chat"].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
-                self.chat_history[state["session_id"]]["updated_time"] = time.time()
+                # self.chat_history[session_id].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
+                self.chat_history[session_id]["chat"].extend([HumanMessage(content=question), AIMessage(content=classifier_response["answer"])])
+                self.chat_history[session_id]["updated_time"] = time.time()
         else:
             response = '{"category": "do_rag", "answer": ""}'
                 
-        return {"messages": [response], "session_id": state["session_id"]}
+        return {"messages": [response], "session_id": session_id}
     
     def __where_to_go(self, state: AgentState) -> str:
         classifier_response = json.loads(state["messages"][-1])
