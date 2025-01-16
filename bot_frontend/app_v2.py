@@ -13,8 +13,7 @@ from typing import Any
 # URL = "http://127.0.0.1:8000/"
 URL = "http://127.0.0.1:8002"
 
-LANGUAGE_MAPPING = {'Singlish':'sing', 'English':'en', 'Sinhala':'si'}
- 
+
 def add_text(history, text: str):
     if not text:
         raise gr.Error('Please enter text to start the conversation')
@@ -51,15 +50,12 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
    
     url = f"{URL}/answer"
  
-    src_ = LANGUAGE_MAPPING[src_language]
-    tgt_ = LANGUAGE_MAPPING[tgt_language]
- 
     if txt:
         data_dict = {
             "question": text,
             "session_hash": request.session_hash,
-            "src_lang": src_,
-            "tgt_lang": tgt_
+            "src_lang": src_language,
+            "tgt_lang": tgt_language
         }
         response = requests.post(url, json=data_dict)
         response_dict = json.loads(response.content)
@@ -83,9 +79,6 @@ def stream_answer(history, answer_txt):
 def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, enable_audio_input: bool, enable_audio_output: bool, request: gr.Request):
     # global answer_txt
     url = f"{URL}/answer"
- 
-    src_ = LANGUAGE_MAPPING[src_language]
-    tgt_ = LANGUAGE_MAPPING[tgt_language]
     
     if audio_input:
         sr, audio_array = audio_input
@@ -101,8 +94,8 @@ def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src
         "question": text,
         "audio_data": audio_array.tolist(),
         "sample_rate": sr,
-        "src_lang": src_,
-        "tgt_lang": tgt_,
+        "src_lang": src_language,
+        "tgt_lang": tgt_language,
         "free_chat_mode": free_chat_mode,
         "enable_audio_input": enable_audio_input,
         "enable_audio_output": enable_audio_output
@@ -153,14 +146,52 @@ def clear_history(history, request: gr.Request):
         return ''
     
     
-def change_audio(enable_audio_checkbox):
-    if enable_audio_checkbox:
-        return gr.Audio(visible=True) #make it visible
-    else:
-        return gr.Audio(visible=False)
- 
+def change_audio(enable_audio_checkbox, enable_audio_input, enable_audio_output):
+    src_lang_list, tgt_lang_list = get_supported_languages(enable_audio_input, enable_audio_output)
 
-# answer_txt = ""
+    if enable_audio_checkbox:
+        return gr.Audio(visible=True), gr.Dropdown(choices=src_lang_list), gr.Dropdown(choices=tgt_lang_list)
+    else:
+        return gr.Audio(visible=False), gr.Dropdown(choices=src_lang_list), gr.Dropdown(choices=tgt_lang_list)
+
+
+def common_languages(lang_list_1, lang_list_2, sort=True):
+    lang_list_1 = set(lang_list_1)
+    lang_list_2 = set(lang_list_2)
+    common = list(lang_list_1.intersection(lang_list_2))
+
+    return sorted(common) if sort else common
+
+
+def get_supported_languages(enable_audio_input, enable_audio_output):
+    url = f"{URL}/languages"
+    response = requests.get(url)
+    response = response.json()
+
+    src_lang_list = []
+    tgt_lang_list = []
+
+    if response["success"]:
+        all_languages = response["languages"]
+        tr_languages = all_languages["translator"]
+        stt_languages = all_languages["stt"]
+        tts_languages = all_languages["tts"]
+
+        if enable_audio_input:
+            src_lang_list = common_languages(tr_languages, stt_languages)
+        else:
+            src_lang_list = tr_languages
+
+        if enable_audio_output:
+            tgt_lang_list = common_languages(tr_languages, tts_languages)
+        else:
+            tgt_lang_list = tr_languages
+
+    return src_lang_list, tgt_lang_list
+
+
+init_src_lang_list, init_tgt_lang_list = get_supported_languages(False, False)
+
 
 with gr.Blocks() as demo:
     answer_txt = gr.State([])
@@ -169,10 +200,10 @@ with gr.Blocks() as demo:
       with gr.Column():
           with gr.Row():  
               src_language = gr.Dropdown(
-                  ["Singlish", "Sinhala", "English"], label="Select Source Language", value="Singlish"
+                  init_src_lang_list, label="Select Source Language", value="english", allow_custom_value=True
               )
               tgt_language = gr.Dropdown(
-                  ["Singlish", "Sinhala", "English"], label="Select Target Language", value="Singlish"
+                  init_tgt_lang_list, label="Select Target Language", value="english", allow_custom_value=True
               )
               with gr.Column():
                 free_chat_mode = gr.Checkbox(label="Free Chat Mode")
@@ -202,7 +233,7 @@ with gr.Blocks() as demo:
             clear_btn = gr.Button('clear')
             
         with gr.Row():          
-            chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/bot.png"])
+            chatbot = gr.Chatbot(value=[], elem_id='chatbot',avatar_images=["icons/me.jpg", "icons/bot.png"], type="tuples")
         with gr.Row():
             audio_output_block = gr.Audio(autoplay=True, label="audio_output", visible=False)
        
@@ -252,8 +283,8 @@ with gr.Blocks() as demo:
             outputs=[web_url],
             queue=True)
     
-    enable_audio_input.change(fn=change_audio, inputs=[enable_audio_input], outputs=[audio_input_block])
-    enable_audio_output.change(fn=change_audio, inputs=[enable_audio_output], outputs=[audio_output_block])
+    enable_audio_input.change(fn=change_audio, inputs=[enable_audio_input, enable_audio_input, enable_audio_output], outputs=[audio_input_block, src_language, tgt_language])
+    enable_audio_output.change(fn=change_audio, inputs=[enable_audio_output, enable_audio_input, enable_audio_output], outputs=[audio_output_block, src_language, tgt_language])
 
 demo.queue()
 # demo.launch(debug=True, server_port=8003)
