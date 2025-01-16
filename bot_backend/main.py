@@ -68,7 +68,7 @@ class Item(BaseModel):
     session_hash: str
     src_lang: Optional[str]
     tgt_lang: Optional[str]
-    context_only: Optional[bool] = True
+    context_only: Optional[bool] = True  # True: RAG, False: Just LLM chat (w/o RAG)
     max_history: Optional[int] = 4
     db_path: Optional[str] = os.getenv("DB_PATH")
     free_chat_mode: Optional[bool] = False
@@ -217,18 +217,10 @@ async def create_answer(item: Item) -> dict:
     else:
         trace = None        
     
-    if item.src_lang == "en":
+    if item.src_lang.lower() == "english":
         user_ip_en = item.question
     elif translator.is_ready():
-        if item.src_lang == "sing":
-            question = convert_first_letter(item.question)
-            user_ip_en = translator.translate(question, src_lang="sing", tgt_lang="en", trace_lf=trace)
-            # user_ip_en = await translator.translate(item.question, src_lang="sing", tgt_lang="en")
-        elif item.src_lang == "si":
-            user_ip_en = translator.translate(item.question, src_lang="si", tgt_lang="en", trace_lf=trace)
-            # user_ip_en = await translator.translate(item.question, src_lang="si", tgt_lang="en")
-        else:
-            user_ip_en = item.question
+        user_ip_en = translator.translate(item.question, src_lang=item.src_lang, tgt_lang="english", trace_lf=trace)
     else:
         success, error = False, "Translator is not ready"
         t_end = time.time()
@@ -257,36 +249,23 @@ async def create_answer(item: Item) -> dict:
         
         return {"user_query": item.question, "en_answer": "", "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
-    if item.tgt_lang == "en":
+    if item.tgt_lang.lower() == "english":
         final_answer = en_answer
     elif translator.is_ready():
-        # TODO: get rid of the following rules
-        if item.tgt_lang == "si":
-            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="si", trace_lf=trace)
-            # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="si")
-            if "වාණිජ බැංකු" in final_answer:
-                final_answer = final_answer.replace("වාණිජ බැංකු", "කොමර්ෂල් බැංකු")
-        elif item.tgt_lang == "sing":
-            final_answer = translator.translate(en_answer, src_lang="en", tgt_lang="sing", trace_lf=trace)
-            # final_answer = await translator.translate(en_answer, src_lang="en", tgt_lang="sing")
-            if "waanija benku" in final_answer:
-                final_answer = final_answer.replace("waanija benku", "Commercial benku")
-        else:
-            final_answer = en_answer
+        final_answer = translator.translate(en_answer, src_lang="english", tgt_lang=item.tgt_lang, trace_lf=trace)
     else:
         success, error = False, "Translator is not ready"
         
         if item.enable_audio_output and tts.is_ready():
-            sample_rate, audio_data = tts.synthesize(en_answer, "en")
+            sample_rate, audio_data = tts.synthesize(en_answer, "english")
 
         t_end = time.time()
         
         return {"user_query": item.question, "en_answer": en_answer, "answer": "", "success": success, "error": error, "time_taken": (t_end - t_start), "sample_rate": sample_rate, "audio_data": audio_data}
     
     if item.enable_audio_output and tts.is_ready():
-        # TODO: tts only supports for English at the moment
-        sample_rate, audio_data = tts.synthesize(en_answer, "en")
-    
+        sample_rate, audio_data = tts.synthesize(final_answer, item.tgt_lang)
+
     print(f"En answer: {en_answer}")
     print(f"Tgt lang answer: {final_answer}")
     t_end = time.time()
