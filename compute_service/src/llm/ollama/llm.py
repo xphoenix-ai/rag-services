@@ -24,7 +24,7 @@ class LLM(LLMBase):
             "top_p": 0.95,
             "temperature": 0.1,            
         }
-        super().__init__(model_path)
+        super().__init__("ollama", model_path)
         
     def _load_model(self, model_path):
         try:

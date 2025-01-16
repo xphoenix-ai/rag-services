@@ -21,7 +21,7 @@ class LLM(LLMBase):
             "top_p": 0.95,
             "temperature": 0.1,         
         }
-        super().__init__(model_path, filename, chat_format)
+        super().__init__("llama_cpp", model_path, filename, chat_format)
         
     def __postprocess(self, result: str) -> str:
         print(f"befor postprocess: {result}")

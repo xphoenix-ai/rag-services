@@ -12,7 +12,7 @@ class LLM(LLMBase):
         self.device = None
         self.tokenize_with_chat_template = tokenize_with_chat_template
         # self.init(model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
-        super().__init__(model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
+        super().__init__("hf", model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit)
         
     def _load_model(self, model_path, torch_dtype, low_cpu_mem_usage, load_in_4bit, load_in_8bit):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side="left", token=os.getenv("HF_TOKEN"))
