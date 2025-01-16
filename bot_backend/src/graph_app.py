@@ -242,8 +242,9 @@ class GraphApp:
         self.__truncate_chat_history(session_id)
         result = self.free_chat_chain.invoke({"input": en_query, "chat_history": self.chat_history[session_id]["chat"]})
         print(f">>> Free Chat result: {result}")
-        full_answer = result['text']
-        
+        # full_answer = result['text']
+        full_answer = result
+
         answer = full_answer.rsplit("### Response", 1)[-1].strip()
 
         # self.chat_history[session_id].extend([HumanMessage(content=en_query), AIMessage(content=answer)])
