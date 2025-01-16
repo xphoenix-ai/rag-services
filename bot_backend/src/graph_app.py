@@ -7,7 +7,7 @@ import operator
 import threading
 import transformers
 from string import Template
-from langchain import HuggingFacePipeline
+# from langchain import HuggingFacePipeline
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage
 from typing import TypedDict, Annotated, Sequence
@@ -17,6 +17,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, ChatPromptTemplate
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain, ConversationalRetrievalChain, LLMChain
 
@@ -220,8 +221,9 @@ class GraphApp:
             ]
         )
 
-        free_chat_chain = LLMChain(llm=self.llm, prompt=free_chat_prompt)
-        
+        # free_chat_chain = LLMChain(llm=self.llm, prompt=free_chat_prompt)
+        free_chat_chain = free_chat_prompt | self.llm
+
         return free_chat_chain
     
     def __get_rag_chain(self, db_path):

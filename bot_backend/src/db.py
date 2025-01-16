@@ -6,8 +6,9 @@ import requests
 import pandas as pd
 from io import StringIO
 import urllib.parse as urlparse
+from langchain_chroma import Chroma
 from langchain.schema.document import Document
-from langchain_community.vectorstores import Chroma
+# from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader, PyPDFDirectoryLoader, PyPDFLoader, TextLoader, RecursiveUrlLoader, Docx2txtLoader, CSVLoader
 
