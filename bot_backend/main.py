@@ -27,6 +27,8 @@ from src.db import VectorDB
 from src.graph_app import GraphApp
 from src.translator import Translator
 
+from utils.language_utils import get_languages
+
 
 os.makedirs(os.getenv("DB_BASE"), exist_ok=True)
 
@@ -86,6 +88,15 @@ def convert_first_letter(sentence):
 @app.get("/")
 async def read_root() -> JSONResponse:
     return JSONResponse({"info": "DB Service", "version": os.getenv("DB_VERSION"), "vendor": "XXX"})
+
+@app.get("/languages")
+async def get_supported_languages() -> JSONResponse:
+    success, language_response = get_languages()
+    response = {
+        "success": success,
+        "languages": language_response
+    }
+    return JSONResponse(response)
 
 @app.post("/create_db")
 def create_db(db_path: str=Body(embed=True, default=None)) -> JSONResponse:
