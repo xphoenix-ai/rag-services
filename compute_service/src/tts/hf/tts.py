@@ -10,7 +10,7 @@ from src.tts.tts_base import TTSBase
 class TTS(TTSBase):
     def __init__(self, model_path: str, device: str="cpu", torch_dtype: torch.dtype=torch.float32, **model_kwargs):
         self.model = None
-        super().__init__(model_path, device, torch_dtype, **model_kwargs)
+        super().__init__("hf", model_path, device, torch_dtype, **model_kwargs)
 
     def _load_model(self, model_path: str, device: str, torch_dtype: torch.dtype, **model_kwargs) -> None:
         self.model = pipeline(

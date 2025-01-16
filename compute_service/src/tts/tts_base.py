@@ -5,12 +5,16 @@ import soundfile as sf
 from abc import ABC, abstractmethod
 from typing import Callable, List, Dict, Union, Any, Tuple
 
+from utils.mapping.language_utils import get_language_code
+
 
 class TTSBase(ABC):
     """base class for tts
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, class_name, *args, **kwargs):
         self.model = None
+        self.sr = None
+        self.class_name = class_name
         self.init(*args, **kwargs)
         
     def init(self, *args, **kwargs) -> None:
@@ -56,6 +60,9 @@ class TTSBase(ABC):
             pieces += [audio_array, silence.copy()]
 
         return sample_rate, np.concatenate(pieces)
+
+    def get_lang_code(self, lang_name):
+        return get_language_code("tts", self.class_name, lang_name)
     
     def is_ready(self) -> bool:
         if self.model is not None:

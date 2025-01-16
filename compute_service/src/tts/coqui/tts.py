@@ -8,7 +8,7 @@ from src.tts.tts_base import TTSBase
 class TTS(TTSBase):
     def __init__(self, model_path: str="tts_models/en/ljspeech/vits", progress_bar: bool=False, device: str="cpu", **model_kwargs):
         self.model = None
-        super().__init__(model_path, progress_bar, device, **model_kwargs)
+        super().__init__("coqui", model_path, progress_bar, device, **model_kwargs)
     
     def _load_model(self, model_path, progress_bar: bool, device: str, **model_kwargs) -> None:
         self.model = CoquiTTS(model_name=model_path, progress_bar=progress_bar, **model_kwargs).to(device)
@@ -33,7 +33,7 @@ class TTS(TTSBase):
         audio_arr = self.model.tts(
             text, 
             speaker=speaker if self.is_multi_speaker else None, 
-            language=language if self.is_multilingual else None, 
+            language=self.get_lang_code(language)[0] if self.is_multilingual else None,
             speaker_wav=speaker_wav
         )
         
