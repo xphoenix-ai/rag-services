@@ -110,6 +110,7 @@ You can access the services as follws
     - [x] Handle both text and voice input and output
     - [x] Add knowledge to vector db through API
     - [x] Trace Responses
+    - [ ] Tool Calling
     - [ ] Further Improvements
 - [ ] Complete Compute Service
     - [ ] LLM Service
@@ -135,7 +136,7 @@ You can access the services as follws
     - [x] Add knowledge to RAG (i.e. File Upload, URL fetch)
     - [ ] Get rid of Gradio
 - [ ] Update Docker Image
-- [ ] Generalize Multilingual Support
+- [x] Generalize Multilingual Support
 - [ ] Voice Streaming Capability
 
 ## Contributors
