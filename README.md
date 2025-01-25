@@ -41,6 +41,11 @@ Client frontend App that the user interacts with the bot/system.
 ### Setup the Environment
 
   * You can create the conda environment named `rag_env` with the given `environment.yml` file.
+  * **Note:**
+    * `environment.yml` builds the environment without the GPU usage.
+    * For GPU usage,
+      * First, you may use `environment.yml` and build the environment
+      * Then install Pytorch (and other GPU packages if any) with CUDA support using conda (or pip) separately in the environment again. 
   ```shell
     conda env create -f environment.yml
   ```
