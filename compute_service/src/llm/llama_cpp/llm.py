@@ -55,7 +55,7 @@ class LLM(LLMBase):
     def generate(self, prompt, **generation_config):
         torch.cuda.empty_cache()
         
-        full_generation_config = self.default_generation_config
+        full_generation_config = self.default_generation_config.copy()
         full_generation_config.update(generation_config)
         
         if self.tokenize_with_chat_template:
