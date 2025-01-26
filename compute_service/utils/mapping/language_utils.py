@@ -28,7 +28,7 @@ def get_language_code(task: str, class_name: str, language: str):
         language_map = {k.lower(): v for (k, v) in language_map.items()}
         LANG_MAPS[map_key] = language_map
 
-    lang_code = language_map.get(language, language)
+    lang_code = language_map.get(language.lower(), language)
     return lang_code, f"{language} not found!" if lang_code is None else ""
 
 
