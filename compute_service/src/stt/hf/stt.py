@@ -9,12 +9,34 @@ from src.stt.stt_base import STTBase
 
 
 class STT(STTBase):
-    def __init__(self, language, model_path: str, device: str = "cpu", torch_dtype: torch.dtype = torch.float32,
-                 **model_kwargs):
+    """Hugging Face Whisper-based STT implementation."""
+
+    def __init__(self, language: str, model_path: str, device: str = "cpu", 
+                 torch_dtype: torch.dtype = torch.float32, **model_kwargs) -> None:
+        """Initialize Hugging Face Whisper STT model.
+
+        Args:
+            language (str): Default language for transcription
+            model_path (str): Path to the Whisper model
+            device (str, optional): Device to load model on. Defaults to "cpu".
+            torch_dtype (torch.dtype, optional): Data type for model weights. Defaults to torch.float32.
+            **model_kwargs: Additional model configuration parameters
+        """
         self.model = None
         super().__init__("hf", language, model_path, device, torch_dtype, **model_kwargs)
 
-    def __get_base_model(self, model_name):
+    def __get_base_model(self, model_name: str) -> str:
+        """Get base model name from model path.
+
+        Args:
+            model_name (str): Full model path/name
+
+        Returns:
+            str: Base model name
+
+        Raises:
+            Exception: If base model cannot be determined
+        """
         if 'large-v3' in model_name:
             base_model = 'openai/whisper-large-v3'
         elif 'large-v2' in model_name:
@@ -32,7 +54,16 @@ class STT(STTBase):
 
         return base_model
 
-    def _load_model(self, model_path: str, device: str, torch_dtype: torch.dtype, **model_kwargs) -> None:
+    def _load_model(self, model_path: str, device: str, torch_dtype: torch.dtype, 
+                   **model_kwargs) -> None:
+        """Load Whisper model and configurations.
+
+        Args:
+            model_path (str): Path to the Whisper model
+            device (str): Device to load model on
+            torch_dtype (torch.dtype): Data type for model weights
+            **model_kwargs: Additional model configuration parameters
+        """
         base_model = self.__get_base_model(model_path)
         torch_dtype = torch.float32 if device == "cpu" else torch_dtype
         self.hf_model = WhisperForConditionalGeneration.from_pretrained(
@@ -47,7 +78,6 @@ class STT(STTBase):
         self.processor = WhisperProcessor.from_pretrained(base_model, language=self.language)
         self.base_generation_config = GenerationConfig.from_pretrained(base_model)
         self.hf_model.generation_config = self.base_generation_config
-        # self.forced_decoder_ids = self.processor.get_decoder_prompt_ids(language=self.language, task="transcribe")
         self.bos_token_id = self.hf_model.config.decoder_start_token_id
         self.max_length = self.hf_model.config.max_length
 
@@ -64,7 +94,19 @@ class STT(STTBase):
         )
         print("[INFO] STT service started...")
 
-    def transcribe(self, audio_array: np.ndarray, sample_rate: int, language: str, **generation_config: dict) -> Tuple[str, str]:
+    def transcribe(self, audio_array: np.ndarray, sample_rate: int, language: str, 
+                  **generation_config: dict) -> Tuple[str, str]:
+        """Transcribe audio using Whisper model.
+
+        Args:
+            audio_array (np.ndarray): The audio data to transcribe
+            sample_rate (int): Sample rate of the audio data
+            language (str): Language of the audio
+            **generation_config: Additional configuration for transcription
+
+        Returns:
+            Tuple[str, str]: Tuple containing (transcribed_text, language)
+        """
         # Ensure audio is mono channel
         if len(audio_array.shape) > 1:
             print("[INFO] Averaging channels to convert to mono")

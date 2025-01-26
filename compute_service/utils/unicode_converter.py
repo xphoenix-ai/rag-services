@@ -2,17 +2,34 @@ import re
 import warnings
 
 
-def sinhala_to_singlish(text):
+def sinhala_to_singlish(text: str) -> tuple[str, str]:
+    """Convert Sinhala Unicode text to Singlish (Sinhala written in English letters).
 
+    Args:
+        text (str): Input text in Sinhala Unicode
+
+    Returns:
+        tuple[str, str]: Tuple containing (transliterated_text, error_message)
+
+    Warns:
+        UserWarning: If the input text contains non-Sinhala characters
+    """
     sinhala_pattern = re.compile(r'[\u0D80-\u0DFF]')
     if not bool(sinhala_pattern.search(text)):
         warnings.warn("Given text has at least one non sinhala letters.")
 
-    def __get_lexical_result(grapheme):
+    def __get_lexical_result(grapheme: str) -> list:
+        """Get the Singlish equivalent and type for a Sinhala grapheme.
+
+        Args:
+            grapheme (str): Single Sinhala character
+
+        Returns:
+            list: [transliterated_char, char_type]
+        """
         return __sinhala_lexical.get(grapheme, [grapheme, "common"])
 
     graphemes = list(text)
-
     singlish_text = ''
 
     for grapheme in graphemes:

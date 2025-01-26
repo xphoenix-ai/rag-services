@@ -8,12 +8,17 @@ from src.llm.llm_base import LLMBase
 
 
 class LLM(LLMBase):
-    def __init__(
-        self, 
-        model_path="llama3:instruct",
-        keep_alive="5m",
-        tokenize_with_chat_template=True
-        ):
+    """Ollama-based LLM implementation."""
+
+    def __init__(self, model_path: str = "llama3:instruct", keep_alive: str = "5m",
+                 tokenize_with_chat_template: bool = True) -> None:
+        """Initialize Ollama LLM.
+
+        Args:
+            model_path (str, optional): Path/name of the Ollama model. Defaults to "llama3:instruct".
+            keep_alive (str, optional): Duration to keep model loaded. Defaults to "5m".
+            tokenize_with_chat_template (bool, optional): Whether to use chat template. Defaults to True.
+        """
         self.model = None
         self.model_path = model_path
         self.keep_alive = keep_alive
@@ -26,7 +31,12 @@ class LLM(LLMBase):
         }
         super().__init__("ollama", model_path)
         
-    def _load_model(self, model_path):
+    def _load_model(self, model_path: str) -> None:
+        """Load Ollama model.
+
+        Args:
+            model_path (str): Path/name of the Ollama model
+        """
         try:
             ollama.show(model_path)
         except ollama.ResponseError as e:
@@ -38,7 +48,16 @@ class LLM(LLMBase):
         self.model = 1
         print("[INFO] LLM service started...")
                 
-    def generate(self, prompt, **generation_config):
+    def generate(self, prompt: str, **generation_config: dict) -> str:
+        """Generate text using Ollama model.
+
+        Args:
+            prompt (str): Input prompt for generation
+            **generation_config: Generation configuration parameters
+
+        Returns:
+            str: Generated text response
+        """
         torch.cuda.empty_cache()
         
         full_generation_config = self.default_generation_config.copy()
