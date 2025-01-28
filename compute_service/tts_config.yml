@@ -4,6 +4,10 @@ hf:
     # model_path: "suno/bark-small"
     device: "cpu"
     torch_dtype: torch.float32
+    low_cpu_mem_usage: True
+  generation_config:
+    forward_params:
+      do_sample: True
 
 coqui:
   model_config:

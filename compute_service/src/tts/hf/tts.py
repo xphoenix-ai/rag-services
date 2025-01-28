@@ -41,7 +41,12 @@ class TTS(TTSBase):
             token=os.getenv("HF_TOKEN"),
             model_kwargs=model_kwargs
         )
-        self.sr = self.model.model.generation_config.sample_rate
+
+        try:
+            self.sr = self.model.model.generation_config.sample_rate
+        except AttributeError:
+            self.sr = self.model.model.config.sampling_rate
+
         print("[INFO] TTS service started...")
 
     def synthesize_one(self, text: str, **generation_config: dict) -> Tuple[int, np.ndarray]:
@@ -55,4 +60,4 @@ class TTS(TTSBase):
             Tuple[int, np.ndarray]: Tuple containing (sample_rate, audio_array)
         """
         speech = self.model(text, **generation_config)
-        return speech["sampling_rate"], speech["audio"]
+        return speech["sampling_rate"], speech["audio"].squeeze()
