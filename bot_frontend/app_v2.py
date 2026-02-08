@@ -15,6 +15,18 @@ URL = "http://127.0.0.1:8002"
 
 
 def add_text(history, text: str):
+    """Add user text input to conversation history.
+    
+    Args:
+        history (list): Current conversation history
+        text (str): User input text
+        
+    Returns:
+        list: Updated conversation history
+        
+    Raises:
+        gr.Error: If text is empty
+    """
     if not text:
         raise gr.Error('Please enter text to start the conversation')
     #history = history + [({"role": "user", "content": text}, {})]
@@ -22,6 +34,15 @@ def add_text(history, text: str):
     return history
 
 def check_input(audio_input, txt_input):
+    """Validate that user provided either audio or text input.
+    
+    Args:
+        audio_input: Audio recording from microphone
+        txt_input (str): Text input from user
+        
+    Raises:
+        gr.Error: If neither audio nor text input is provided
+    """
     try:
         sr, audio_array = audio_input
     except:
@@ -31,10 +52,26 @@ def check_input(audio_input, txt_input):
         raise gr.Error('Please say or type something to proceed')
 
 def reverse_audio(audio, reverse=False):
+    """Reverse or keep audio data unchanged.
+    
+    Args:
+        audio: Tuple of (sample_rate, audio_array)
+        reverse (bool, optional): Whether to reverse the audio. Defaults to False.
+        
+    Returns:
+        Tuple[int, np.ndarray]: (sample_rate, audio_array) unchanged or reversed
+    """
     sr, data = audio
     return (sr, np.flipud(data) if reverse else data)
  
 def upload_website(text: str):
+    """Upload content from a website URL to the knowledge base.
+    
+    Args:
+        text (str): URL to upload from
+        
+    Displays success or error message based on API response.
+    """
  
     url = f"{URL}/update_url"
     data_json = {'url': text}
@@ -47,6 +84,18 @@ def upload_website(text: str):
     #return ''
  
 def generate_answer(history, text: str, src_language:str, tgt_language:str, request: gr.Request):
+    """Generate an answer to a user query with language translation.
+    
+    Args:
+        history (list): Conversation history
+        text (str): User query
+        src_language (str): Source language code
+        tgt_language (str): Target language code
+        request (gr.Request): Gradio request object for session handling
+        
+    Yields:
+        Tuple[list, str]: Updated history and empty input field
+    """
    
     url = f"{URL}/answer"
  
@@ -66,6 +115,15 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
             yield history,''
 
 def stream_answer(history, answer_txt):
+    """Stream answer text character by character to conversation history.
+    
+    Args:
+        history (list): Conversation history
+        answer_txt (str): Answer text to stream
+        
+    Yields:
+        list: Updated history with progressively more answer text
+    """
     # global answer_txt
     # answer = history[-1][-1]
     history[-1][-1] = ''
@@ -77,6 +135,22 @@ def stream_answer(history, answer_txt):
         yield history
             
 def generate_audio_answer(history: list, text: str, audio_input: np.ndarray, src_language:str, tgt_language:str, free_chat_mode: bool, enable_audio_input: bool, enable_audio_output: bool, request: gr.Request):
+    """Generate answer with audio input and/or output support.
+    
+    Args:
+        history (list): Conversation history
+        text (str): Text query
+        audio_input (np.ndarray): Audio input from microphone
+        src_language (str): Source language code
+        tgt_language (str): Target language code
+        free_chat_mode (bool): Whether to use free chat without RAG
+        enable_audio_input (bool): Whether to process audio input
+        enable_audio_output (bool): Whether to generate audio output
+        request (gr.Request): Gradio request object for session handling
+        
+    Yields:
+        Tuple[list, str, Tuple]: Updated history, empty input, and optional audio output
+    """
     # global answer_txt
     url = f"{URL}/answer"
     

@@ -24,8 +24,71 @@ from src.tts.tts_base import TTSBase
 from src.encoder.encoder_base import EncoderBase
 from src.translator.translator_base import TranslatorBase
 
-
 load_dotenv()
+
+description = """
+This is the API Documentation of the Compute Service.
+
+* Contains a translator, LLM, ASR, TTS and an Embedding service
+* This is a state-less service
+* Contains all the heavy operations of the system
+* Independently run without other services
+* Easily add new models by simpy adding inherited classes from the corresponding base classes
+* The running models are set using the env file
+"""
+
+tags_metadata = [
+    {
+        "name": "root",
+        "description": "Gives the basic info about the application.",
+    },
+    {
+        "name": "languages",
+        "description": "Gives all the supported languages by the compute service for each service (i.e. translator, tts, stt). The list of supported languages can vary depending on the selected models.",
+    },
+    {
+        "name": "translate",
+        "description": "Translates a given text from source language to a target language",
+    },
+    {
+        "name": "generate",
+        "description": "Generates LLM response to a given query.",
+    },
+    {
+        "name": "transcribe",
+        "description": "Transcribes an input audio array.",
+    },
+    {
+        "name": "synthesize",
+        "description": "Generates an audio array for a given text.",
+    },
+    {
+        "name": "encode",
+        "description": "Generates sentence embeddings for a given list of texts.",
+    },
+    {
+        "name": "status",
+        "description": "Gives the status of each service of the application.",
+    },
+]
+
+app = FastAPI(
+title="Compute Service",
+    description=description,
+    # summary="Compute service of the system",
+    version="1.0",
+    # terms_of_service="http://example.com/terms/",
+    contact={
+        "name": "xphoenix-ai",
+        "url": "https://www.linkedin.com/company/xphoenix-ai",
+        "email": "xphoenixai@gmail.com",
+    },
+    license_info={
+        "name": "Apache 2.0",
+        "url": "https://github.com/xphoenix-ai/rag-services?tab=Apache-2.0-1-ov-file#readme",
+    },
+    openapi_tags=tags_metadata
+)
 
 llm_class = os.getenv('LLM_CLASS', 'hf')
 encoder_class = os.getenv('ENCODER_CLASS', 'st')
@@ -54,12 +117,15 @@ Encoder = get_module(f"src.encoder.{encoder_class}.encoder", "Encoder")
 STT = get_module(f"src.stt.{stt_class}.stt", "STT")
 TTS = get_module(f"src.tts.{tts_class}.tts", "TTS")
 
-app = FastAPI()
 
 llm: LLMBase = LLM(**llm_config["model_config"])
+time.sleep(5)
 stt: STTBase  = STT(**stt_config["model_config"])
+time.sleep(10)
 tts: TTSBase = TTS(**tts_config["model_config"])
+time.sleep(10)
 encoder: EncoderBase = Encoder(**encoder_config["model_config"])
+time.sleep(20)
 translator: TranslatorBase = Translator(**translator_config["model_config"])
 
 translator_language_map, stt_language_map, tts_language_map = get_language_maps(translator_class, stt_class, tts_class)
@@ -74,6 +140,13 @@ app.add_middleware(
 
 
 class TrIntput(BaseModel):
+    """Request model for translation endpoint.
+    
+    Attributes:
+        src (str): Source text to translate
+        src_lang (str): Source language code
+        tgt_lang (str): Target language code
+    """
     src: str
     src_lang: str
     tgt_lang: str
@@ -81,6 +154,18 @@ class TrIntput(BaseModel):
 
 
 class TrOutput(BaseModel):
+    """Response model for translation endpoint.
+    
+    Attributes:
+        src (str): Original source text
+        tgt (str): Translated text
+        intermediate_res (str): Intermediate translation results if applicable
+        src_lang (str): Source language code
+        tgt_lang (str): Target language code
+        modified_time (datetime): Timestamp of translation
+        time_taken (float): Time taken for translation in seconds
+        error (str): Error message if translation failed
+    """
     src: str
     tgt: Optional[str]
     intermediate_res: Optional[str]
@@ -92,10 +177,24 @@ class TrOutput(BaseModel):
         
     
 class EmbdIntput(BaseModel):
+    """Request model for embedding endpoint.
+    
+    Attributes:
+        sentences (list[str]): List of sentences to encode
+    """
     sentences: list[str]
     
     
 class EmbdOutput(BaseModel):
+    """Response model for embedding endpoint.
+    
+    Attributes:
+        sentences (list[str]): Input sentences that were encoded
+        embeddings (list[list[float]]): Embedding vectors for each sentence
+        modified_time (datetime): Timestamp of encoding
+        time_taken (float): Time taken for encoding in seconds
+        error (str): Error message if encoding failed
+    """
     sentences: list[str]
     embeddings: Optional[list[list[float]]]
     modified_time: Optional[datetime]
@@ -103,16 +202,16 @@ class EmbdOutput(BaseModel):
     error: Optional[str]
     
 
-# class LLMInput(BaseModel):
-#     prompt: str
-#     do_sample: bool = True
-#     max_new_tokens: int = 200
-#     top_k: Optional[int] = 20
-#     top_p: Optional[float] = 0.95
-#     temperature: Optional[float] = 0.1
-
-
 class LLMOutput(BaseModel):
+    """Response model for LLM generation endpoint.
+    
+    Attributes:
+        prompt (str): Input prompt sent to the model
+        response (str): Generated text response
+        modified_time (datetime): Timestamp of generation
+        time_taken (float): Time taken for generation in seconds
+        error (str): Error message if generation failed
+    """
     prompt: str
     response: str
     modified_time: Optional[datetime]
@@ -121,6 +220,15 @@ class LLMOutput(BaseModel):
 
 
 class STTOutput(BaseModel):
+    """Response model for speech-to-text endpoint.
+    
+    Attributes:
+        transcription (str): Transcribed text from audio
+        language (str): Detected language code
+        modified_time (datetime): Timestamp of transcription
+        time_taken (float): Time taken for transcription in seconds
+        error (str): Error message if transcription failed
+    """
     transcription: str
     language: str
     modified_time: Optional[datetime]
@@ -129,20 +237,40 @@ class STTOutput(BaseModel):
 
 
 class TTSOutput(BaseModel):
+    """Response model for text-to-speech endpoint.
+    
+    Attributes:
+        audio_response (list): Audio samples as list
+        sample_rate (int): Sample rate of the generated audio in Hz
+        input_text (str): Text that was synthesized
+        modified_time (datetime): Timestamp of synthesis
+        time_taken (float): Time taken for synthesis in seconds
+        error (str): Error message if synthesis failed
+    """
     audio_response: list
     sample_rate: int
     input_text: str
     modified_time: Optional[datetime]
     time_taken: Optional[float]
     error: Optional[str]
+    
 
-
-@app.get("/")
+@app.get("/", tags=["root"])
 async def read_root() -> JSONResponse:
+    """Get basic information about the Compute Service.
+    
+    Returns:
+        JSONResponse: Service info with version and vendor details
+    """
     return JSONResponse({"info": "Compute Service", "version": os.getenv("TR_VERSION"), "vendor": "XXX"})
 
-@app.get("/languages")
+@app.get("/languages", tags=["languages"])
 async def get_supported_languages() -> JSONResponse:
+    """Get list of supported languages for all services.
+    
+    Returns:
+        JSONResponse: Dictionary with supported languages for translator, STT, and TTS
+    """
     
     return JSONResponse({
        "translator": sorted([l.lower() for l in translator_language_map.keys()]),
@@ -151,8 +279,16 @@ async def get_supported_languages() -> JSONResponse:
     })
 
 
-@app.post("/translate")
+@app.post("/translate", tags=["translate"])
 async def translate(tr_item: TrIntput) -> JSONResponse:
+    """Translate text from source language to target language.
+    
+    Args:
+        tr_item (TrIntput): Translation request with source text and language codes
+        
+    Returns:
+        JSONResponse: Translation result with metadata
+    """
     t_start = time.time()
     
     src_lang = tr_item.src_lang
@@ -182,8 +318,16 @@ async def translate(tr_item: TrIntput) -> JSONResponse:
     
     return JSONResponse(json_obj)
 
-@app.post("/encode")
+@app.post("/encode", tags=["encode"])
 async def encode(embed_item: EmbdIntput) -> JSONResponse:
+    """Generate sentence embeddings for input texts.
+    
+    Args:
+        embed_item (EmbdIntput): Request containing sentences to encode
+        
+    Returns:
+        JSONResponse: Embeddings with metadata
+    """
     t_start = time.time()
     
     sentences = embed_item.sentences
@@ -203,12 +347,21 @@ async def encode(embed_item: EmbdIntput) -> JSONResponse:
     
     return JSONResponse(json_obj)
 
-@app.post("/generate")
+@app.post("/generate", tags=["generate"])
 # async def generate(llm_input: LLMInput) -> JSONResponse:
 async def generate(
     prompt: str=Body(embed=True), 
     generation_config: dict=Body(embed=True, default=llm_config["generation_config"])
     ) -> JSONResponse:
+    """Generate text using the LLM model.
+    
+    Args:
+        prompt (str): Input prompt for text generation
+        generation_config (dict, optional): Model generation parameters
+        
+    Returns:
+        JSONResponse: Generated text with metadata
+    """
     t_start = time.time()
     
     response = llm.generate(prompt, **generation_config)
@@ -227,8 +380,18 @@ async def generate(
     
     return JSONResponse(json_obj)
 
-@app.post("/transcribe")
+@app.post("/transcribe", tags=["transcribe"])
 async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(embed=True, default=16_000), language: str=Body(embed=True)) -> JSONResponse:
+    """Transcribe audio to text.
+    
+    Args:
+        audio_data (list): Audio samples as list
+        sample_rate (int, optional): Sample rate of audio in Hz. Defaults to 16000.
+        language (str): Language code for transcription
+        
+    Returns:
+        JSONResponse: Transcription result with detected language and metadata
+    """
     t_start = time.time()
 
     audio_array = np.array(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
@@ -248,8 +411,17 @@ async def transcribe(audio_data: list=Body(embed=True), sample_rate: int=Body(em
     
     return JSONResponse(json_obj)
 
-@app.post("/synthesize")
+@app.post("/synthesize", tags=["synthesize"])
 async def synthesize(text: str=Body(embed=True), language: str=Body(embed=True, default="en")) -> JSONResponse:
+    """Synthesize text to audio.
+    
+    Args:
+        text (str): Text to synthesize into audio
+        language (str, optional): Language code for synthesis. Defaults to "en".
+        
+    Returns:
+        JSONResponse: Audio array with sample rate and metadata
+    """
     t_start = time.time()
 
     generation_config = tts_config.get("generation_config", {})
@@ -269,8 +441,13 @@ async def synthesize(text: str=Body(embed=True), language: str=Body(embed=True, 
     
     return JSONResponse(json_obj)
 
-@app.get("/status")
+@app.get("/status", tags=["status"])
 async def status() -> JSONResponse:
+    """Get the status of all services (LLM, encoder, translator, STT, TTS).
+    
+    Returns:
+        JSONResponse: Status of each service and overall service readiness
+    """
     try:
       llm_status = llm.is_ready()
     #   llm_status = await llm.is_ready()

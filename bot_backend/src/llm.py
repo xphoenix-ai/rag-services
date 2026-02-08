@@ -8,12 +8,13 @@ from langchain_core.outputs import GenerationChunk
 
 
 class CustomLLM(LLM):
+    """Custom LLM that communicates with an external language model server via HTTP.
+    
+    This class implements the LangChain LLM interface to interact with a custom
+    language model service. It supports both regular calls and streaming responses.
+    """
+    
     url: str = os.getenv("LLM_URL")
-    # do_sample: Optional[bool] = True
-    # temperature: Optional[float] = 0.1
-    # top_p: Optional[float] = 0.95
-    # top_k: Optional[int] = 20
-    # max_new_tokens: Optional[int]   = 200
     generation_config: dict = {
         "do_sample": True,
         "max_new_tokens": 200,
@@ -21,56 +22,21 @@ class CustomLLM(LLM):
         "top_p": 0.95,
         "temperature": 0.1
     }
-    
-    # def __init__(self, do_sample=True, max_new_tokens=200, top_k=20, top_p=0.95, temperature=0.1):
-    # def __init__(self):
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-
-        # self.url = url
-        # self.generation_config = {
-        #     "do_sample": do_sample,
-        #     "max_new_tokens": max_new_tokens,
-        #     "top_k": top_k,
-        #     "top_p": top_p,
-        #     "temperature": temperature,
-        # }
-        # self.generation_config = self._get_model_default_parameters
-        
-        # self.do_sample = do_sample
-        # self.max_new_tokens = max_new_tokens
-        # self.top_k = top_k
-        # self.top_p = top_p
-        # self.temperature = temperature
-        
-        # self.do_sample = True
-        # self.max_new_tokens = 200
-        # self.top_k = 20
-        # self.top_p = 0.95
-        # self.temperature = 0.1
-        
-        # self.generation_config = {
-        #     "do_sample": self.do_sample,
-        #     "max_new_tokens": self.max_new_tokens,
-        #     "top_k": self.top_k,
-        #     "top_p": self.top_p,
-        #     "temperature": self.temperature,
-        # }
-        
-    # @property
-    # def _get_model_default_parameters(self):
-    #     return {
-    #         "do_sample": self.do_sample,
-    #         "max_new_tokens": self.max_new_tokens,
-    #         "top_k": self.top_k,
-    #         "top_p": self.top_p,
-    #         "temperature": self.temperature,
-    #     }
-
-    def __postprocess(self, text):
-        return text.split("\n", 1)[0]
         
     def __get_response(self, prompt: str, **kwargs: Any) -> str:
+        """Send prompt to the LLM server and get response.
+        
+        Args:
+            prompt (str): The input prompt for the language model
+            **kwargs: Additional generation parameters
+            
+        Returns:
+            str: The model's response text
+            
+        Raises:
+            requests.RequestException: If the HTTP request fails
+            KeyError: If response doesn't contain expected "response" field
+        """
         url = os.getenv("LLM_URL")
         generation_config = {
             "do_sample": True,
@@ -173,6 +139,11 @@ class CustomLLM(LLM):
         return "custom"
     
     def is_ready(self):
+        """Check if the LLM service is available and ready.
+        
+        Returns:
+            bool: True if the LLM service is ready, False otherwise
+        """
         try:
             response = requests.get(os.getenv("STATUS_URL"))
             status = response.json()["llm"]

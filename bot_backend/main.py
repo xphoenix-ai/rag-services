@@ -62,6 +62,22 @@ app.add_middleware(
 )
 
 class Item(BaseModel):
+    """Request model for the answer endpoint containing user query and configuration.
+    
+    Attributes:
+        question (str): User question text
+        audio_data (list): Raw audio samples for speech input
+        sample_rate (int): Sample rate of audio data in Hz
+        session_hash (str): Unique session identifier for conversation history
+        src_lang (str): Source language code
+        tgt_lang (str): Target language code
+        context_only (bool): True for simple LLM mode, False for langgraph mode
+        max_history (int): Maximum number of messages to keep in conversation history
+        db_path (str): Path to the vector database to use
+        free_chat_mode (bool): True for chat without RAG, False for RAG-based responses
+        enable_audio_input (bool): Whether to enable speech input
+        enable_audio_output (bool): Whether to enable speech output
+    """
     question: Optional[str] = ""
     audio_data: Optional[list] = []
     sample_rate: Optional[int] = 16_000
@@ -77,6 +93,14 @@ class Item(BaseModel):
 
 
 def convert_first_letter(sentence):
+    """Convert first letter of sentence to lowercase if it's uppercase.
+    
+    Args:
+        sentence (str): Input sentence
+        
+    Returns:
+        str: Sentence with potentially converted first letter
+    """
     sentence = sentence.strip()
     words = sentence.split()
     if words[0].isupper():

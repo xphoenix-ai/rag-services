@@ -3,10 +3,30 @@ import requests
 
 
 class Translator:
+    """Translation service that communicates with a translator server via HTTP."""
+    
     def __init__(self):
+        """Initialize the Translator service.
+        
+        Reads the translator service URL from the TRANSLATOR_URL environment variable.
+        """
         self.url = os.getenv("TRANSLATOR_URL")
         
     def translate(self, query, src_lang, tgt_lang, trace_lf):
+        """Translate text from source language to target language.
+        
+        Args:
+            query (str): Text to translate
+            src_lang (str): Source language code
+            tgt_lang (str): Target language code
+            trace_lf: Optional Langfuse tracer for logging the translation operation
+            
+        Returns:
+            str: Translated text in the target language
+            
+        Raises:
+            requests.RequestException: If the HTTP request to the server fails
+        """
         json_body = {
             "src": query,
             "src_lang": src_lang,
@@ -26,6 +46,11 @@ class Translator:
         return response["tgt"]
     
     def is_ready(self):
+        """Check if the translator service is available and ready.
+        
+        Returns:
+            bool: True if the translator service is ready, False otherwise
+        """
         try:
             response = requests.get(os.getenv("STATUS_URL"))
             status = response.json()["translator"]

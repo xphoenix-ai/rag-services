@@ -14,6 +14,18 @@ URL = "http://localhost:8002"
 LANGUAGE_MAPPING = {'Singlish':'sing', 'English':'en', 'Sinhala':'si'}
  
 def add_text(history, text: str):
+    """Add user text input to conversation history.
+    
+    Args:
+        history (list): Current conversation history
+        text (str): User input text
+        
+    Returns:
+        list: Updated conversation history
+        
+    Raises:
+        gr.Error: If text is empty
+    """
     if not text:
         raise gr.Error('Please enter text to start the conversation')
     #history = history + [({"role": "user", "content": text}, {})]
@@ -21,6 +33,13 @@ def add_text(history, text: str):
     return history
  
 def upload_website(text: str):
+    """Upload content from a website URL to the knowledge base.
+    
+    Args:
+        text (str): URL to upload from
+        
+    Displays success or error message based on API response.
+    """
  
     url = f"{URL}/update_url"
     data_json = {'url': text}
@@ -33,6 +52,18 @@ def upload_website(text: str):
     #return ''
  
 def generate_answer(history, text: str, src_language:str, tgt_language:str, request: gr.Request):
+    """Generate an answer to a user query with language translation.
+    
+    Args:
+        history (list): Conversation history
+        text (str): User query
+        src_language (str): Source language name
+        tgt_language (str): Target language name
+        request (gr.Request): Gradio request object for session handling
+        
+    Yields:
+        Tuple[list, str]: Updated history and empty input field
+    """
    
     url = f"{URL}/answer"
  
@@ -55,6 +86,13 @@ def generate_answer(history, text: str, src_language:str, tgt_language:str, requ
             yield history,''
  
 def upload_file(files):
+    """Upload document files to the knowledge base.
+    
+    Args:
+        files (list): List of file objects to upload
+        
+    Displays success or error message for each uploaded file.
+    """
  
     url = f"{URL}/update_file"
     file_paths = [file.name for file in files]
@@ -75,6 +113,15 @@ def upload_file(files):
                 
 
 def clear_history(history, request: gr.Request):
+    """Clear conversation history for the current session.
+    
+    Args:
+        history (list): Current conversation history
+        request (gr.Request): Gradio request object for session handling
+        
+    Returns:
+        str: Empty string to reset the input field
+    """
     url = f"{URL}/clear_history"
     body = {'session_hash': request.session_hash}
     response = requests.post(url, json=body)
